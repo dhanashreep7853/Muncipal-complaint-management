@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header animate">
+    <div class="header-icon">🏛️</div>
+    <div>
+        <h2>Dashboard</h2>
+        <p style="color: var(--text-muted); font-size:0.88rem; margin:0;">Overview of all citizen complaints</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4 animate-delay-1">
+        <div class="stat-card total">
+            <div class="icon-wrap"><i class="bi bi-clipboard-data"></i></div>
+            <h6>Total Complaints</h6>
+            <div class="stat-number" id="total-num">0</div>
+            <p style="color:var(--text-muted); font-size:0.82rem; margin-top:6px;">All time submissions</p>
+        </div>
+    </div>
+    <div class="col-md-4 animate-delay-2">
+        <div class="stat-card pending">
+            <div class="icon-wrap"><i class="bi bi-hourglass-split"></i></div>
+            <h6>Pending</h6>
+            <div class="stat-number" id="pending-num">0</div>
+            <p style="color:var(--text-muted); font-size:0.82rem; margin-top:6px;">Awaiting action</p>
+        </div>
+    </div>
+    <div class="col-md-4 animate-delay-3">
+        <div class="stat-card resolved">
+            <div class="icon-wrap"><i class="bi bi-check-circle"></i></div>
+            <h6>Resolved</h6>
+            <div class="stat-number" id="resolved-num">0</div>
+            <p style="color:var(--text-muted); font-size:0.82rem; margin-top:6px;">Successfully closed</p>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6 animate-delay-2">
+        <div class="stat-card" style="height:100%;">
+            <h6 style="margin-bottom:1.2rem;">📊 Complaint Status Overview</h6>
+            <canvas id="statusChart" height="220"></canvas>
+        </div>
+    </div>
+    <div class="col-md-6 animate-delay-3">
+        <div class="stat-card" style="height:100%;">
+            <h6 style="margin-bottom:1.2rem;">📈 Resolution Rate</h6>
+            <canvas id="rateChart" height="220"></canvas>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const total = {{ total }};
+    const pending = {{ pending }};
+    const resolved = {{ resolved }};
+
+    function animateCount(id, target) {
+        let current = 0;
+        const step = Math.max(1, Math.floor(target / 40));
+        const timer = setInterval(() => {
+            current += step;
+            if (current >= target) { current = target; clearInterval(timer); }
+            document.getElementById(id).textContent = current;
+        }, 30);
+    }
+
+    setTimeout(() => {
+        animateCount('total-num', total);
+        animateCount('pending-num', pending);
+        animateCount('resolved-num', resolved);
+    }, 400);
+
+    const ctx1 = document.getElementById('statusChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+            labels: ['Pending', 'Resolved', 'In Progress'],
+            datasets: [{
+                data: [pending, resolved, Math.max(0, total - pending - resolved)],
+                backgroundColor: ['#e9c46a', '#40916c', '#74c69d'],
+                borderWidth: 0,
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom', labels: { font: { family: 'DM Sans', size: 12 }, padding: 16 } }
+            },
+            cutout: '65%'
+        }
+    });
+
+    const ctx2 = document.getElementById('rateChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: ['Total', 'Pending', 'Resolved'],
+            datasets: [{
+                label: 'Complaints',
+                data: [total, pending, resolved],
+                backgroundColor: ['#2d6a4f', '#e9c46a', '#52b788'],
+                borderRadius: 8,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#edf7f0' }, ticks: { font: { family: 'DM Sans' } } },
+                x: { grid: { display: false }, ticks: { font: { family: 'DM Sans' } } }
+            }
+        }
+    });
+</script>
+{% endblock %}

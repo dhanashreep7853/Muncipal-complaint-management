@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header animate">
+    <div class="header-icon">🛡️</div>
+    <div>
+        <h2>Admin Panel</h2>
+        <p style="color: var(--text-muted); font-size:0.88rem; margin:0;">Manage and resolve citizen complaints</p>
+    </div>
+</div>
+
+<div class="d-flex gap-3 mb-4 animate-delay-1" style="flex-wrap:wrap;">
+    <div style="background:var(--green-pale); padding:10px 20px; border-radius:10px; font-size:0.88rem; font-weight:600; color:var(--green-dark);">
+        📋 Total: {{ data|length }}
+    </div>
+</div>
+
+<div class="admin-table animate-delay-2">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#ID</th>
+                <th>Citizen Name</th>
+                <th>Category</th>
+                <th>Priority</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in data %}
+            <tr class="{% if c[3]=='High' %}high-row{% elif c[3]=='Medium' %}medium-row{% endif %}">
+                <td><strong style="color:var(--green-dark);">#{{c[0]}}</strong></td>
+                <td>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="width:32px;height:32px;background:var(--green-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;color:var(--green-mid);">
+                            {{c[1][0].upper()}}
+                        </div>
+                        {{c[1]}}
+                    </div>
+                </td>
+                <td>
+                    {% if c[2] == 'Garbage' %}🗑️
+                    {% elif c[2] == 'Road Damage' %}🚧
+                    {% elif c[2] == 'Streetlight' %}💡
+                    {% elif c[2] == 'Water Supply' %}💧
+                    {% else %}🌊{% endif %}
+                    {{c[2]}}
+                </td>
+                <td>
+                    {% if c[3]=="High" %}<span class="badge-high">🔴 High</span>
+                    {% elif c[3]=="Medium" %}<span class="badge-medium">🟡 Medium</span>
+                    {% else %}<span class="badge-low">🟢 Low</span>{% endif %}
+                </td>
+                <td style="max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text-muted); font-size:0.85rem;">{{c[4]}}</td>
+                <td>
+                    <span class="status-badge {% if c[5] == 'Pending' %}status-pending{% elif c[5] == 'In Progress' %}status-progress{% else %}status-resolved{% endif %}">
+                        {% if c[5] == 'Pending' %}⏳{% elif c[5] == 'In Progress' %}🔄{% else %}✅{% endif %}
+                        {{c[5]}}
+                    </span>
+                </td>
+                <td style="font-size:0.8rem; color:var(--text-muted);">{{c[6]}}</td>
+                <td>
+                    <div class="d-flex gap-2">
+                        <a href="/update/{{c[0]}}/progress" class="btn-action btn-progress"><i class="bi bi-arrow-repeat"></i> Progress</a>
+                        <a href="/update/{{c[0]}}/resolved" class="btn-action btn-resolve"><i class="bi bi-check2"></i> Resolve</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            {% if data|length == 0 %}
+            <tr>
+                <td colspan="8" style="text-align:center; padding:3rem; color:var(--text-muted);">
+                    <div style="font-size:2.5rem; margin-bottom:0.5rem;">📭</div>
+                    No complaints submitted yet.
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
