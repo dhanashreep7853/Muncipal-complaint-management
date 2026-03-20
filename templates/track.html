@@ -5,15 +5,19 @@
     <div class="header-icon">🔍</div>
     <div>
         <h2>Track Your Complaint</h2>
-        <p style="color: var(--text-muted); font-size:0.88rem; margin:0;">Enter your complaint ID to check the current status</p>
+        <p style="color: var(--text-muted); font-size:0.88rem; margin:0;">
+            Enter your complaint ID to check the current status
+        </p>
     </div>
 </div>
 
 <div class="form-card animate-delay-1">
     <form method="post">
-        <label class="form-label"><i class="bi bi-hash"></i> &nbsp;Complaint ID</label>
+        <label class="form-label">
+            <i class="bi bi-hash"></i> &nbsp;Complaint ID
+        </label>
         <div class="d-flex gap-3">
-            <input class="form-control" name="cid" placeholder="Enter your complaint ID (e.g. 1, 2, 3...)" required>
+            <input class="form-control" name="cid" placeholder="Enter your complaint ID" required>
             <button type="submit" class="btn-submit" style="white-space:nowrap;">
                 <i class="bi bi-search"></i> Track
             </button>
@@ -23,39 +27,64 @@
 
 {% if complaint %}
 <div class="track-result animate-delay-2">
+
+    <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-start mb-3">
         <div>
-            <p style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; font-weight:600;">Complaint #{{complaint[0]}}</p>
-            <h4 style="font-family:'Playfair Display',serif; color:var(--green-dark);">{{complaint[2]}} Issue</h4>
+            <p style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; font-weight:600;">
+                Complaint ID: {{ complaint[1] }}
+            </p>
+            <h4 style="font-family:'Playfair Display',serif; color:var(--green-dark);">
+                {{ complaint[3] }} Issue
+            </h4>
         </div>
+
         <span class="status-badge
-            {% if complaint[5] == 'Pending' %}status-pending
-            {% elif complaint[5] == 'In Progress' %}status-progress
+            {% if complaint[6] == 'Pending' %}status-pending
+            {% elif complaint[6] == 'In Progress' %}status-progress
             {% else %}status-resolved{% endif %}">
-            {% if complaint[5] == 'Pending' %}⏳{% elif complaint[5] == 'In Progress' %}🔄{% else %}✅{% endif %}
-            {{complaint[5]}}
+
+            {% if complaint[6] == 'Pending' %}⏳
+            {% elif complaint[6] == 'In Progress' %}🔄
+            {% else %}✅{% endif %}
+
+            {{ complaint[6] }}
         </span>
     </div>
+
     <hr style="border-color: var(--green-pale);">
+
     <div class="row mt-3">
+
+        <!-- NAME -->
         <div class="col-md-6 mb-3">
-            <p style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; font-weight:600;">Submitted By</p>
-            <p style="font-weight:600; color:var(--text-dark);">{{complaint[1]}}</p>
+            <p class="label">Submitted By</p>
+            <p class="value">{{ complaint[2] }}</p>
         </div>
+
+        <!-- PRIORITY -->
         <div class="col-md-6 mb-3">
-            <p style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; font-weight:600;">Priority</p>
-            <span class="{% if complaint[3] == 'High' %}badge-high{% elif complaint[3] == 'Medium' %}badge-medium{% else %}badge-low{% endif %}">
-                {{complaint[3]}}
+            <p class="label">Priority</p>
+            <span class="
+                {% if complaint[4] == 'High' %}badge-high
+                {% elif complaint[4] == 'Medium' %}badge-medium
+                {% else %}badge-low{% endif %}">
+                {{ complaint[4] }}
             </span>
         </div>
+
+        <!-- DESCRIPTION -->
         <div class="col-12">
-            <p style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; font-weight:600;">Description</p>
-            <p style="color:var(--text-dark); line-height:1.6;">{{complaint[4]}}</p>
+            <p class="label">Description</p>
+            <p class="value">{{ complaint[5] }}</p>
         </div>
+
+        <!-- DATE -->
         <div class="col-12 mt-2">
-            <p style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; font-weight:600;">Submitted On</p>
-            <p style="color:var(--text-muted); font-size:0.88rem;">{{complaint[6]}}</p>
+            <p class="label">Submitted On</p>
+            <p class="value">{{ complaint[7] }}</p>
         </div>
+
     </div>
 </div>
 {% endif %}

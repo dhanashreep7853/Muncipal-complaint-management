@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- HEADER -->
+<meta http-equiv="Cache-Control" content="no-store" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+
+<div class="page-header animate">
+    <div class="header-icon">🔑</div>
+    <div>
+        <h2>Login</h2>
+        <p style="color: var(--text-muted); font-size:0.88rem; margin:0;">
+            Access your account to manage complaints
+        </p>
+    </div>
+</div>
+
+<!-- FORM -->
+<div class="form-card animate-delay-1">
+    <form method="post" autocomplete="off">
+
+        <!-- EMAIL -->
+        <div class="mb-4">
+            <label class="form-label"><i class="bi bi-envelope"></i> &nbsp;Email Address</label>
+            <input name="email" type="email" class="form-control" placeholder="Enter your email" required>
+        </div>
+
+        <!-- PASSWORD -->
+        <div class="mb-4">
+            <label class="form-label"><i class="bi bi-lock"></i> &nbsp;Password</label>
+            <input name="password" type="password" class="form-control" placeholder="Enter your password" required>
+        </div>
+
+        <!-- BUTTON -->
+        <button type="submit" class="btn-submit">
+            <i class="bi bi-box-arrow-in-right"></i> Login
+        </button>
+
+        <!-- EXTRA LINK -->
+        <div style="margin-top:12px; font-size:0.85rem; color:var(--text-muted);">
+            Don’t have an account? 
+            <a href="/signup" style="color:var(--green-mid); font-weight:600; text-decoration:none;">
+                Signup
+            </a>
+        </div>
+
+    </form>
+</div>
+
+<!-- INLINE CSS -->
+<style>
+    /* Slight animation polish */
+    .form-card {
+        transition: all 0.3s ease;
+    }
+
+    .form-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    /* Input focus improvement */
+    .form-control:focus {
+        transform: scale(1.01);
+    }
+
+    /* Button spacing */
+    .btn-submit {
+        margin-top: 10px;
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Link hover */
+    a:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<script>
+window.onload = function() {
+    document.querySelector("form").reset();
+}
+</script>
+
+{% endblock %}

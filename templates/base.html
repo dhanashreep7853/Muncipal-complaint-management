@@ -293,11 +293,27 @@
             Municipal Complaint System
         </a>
         <div class="nav-links ms-auto">
-            <a href="/"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    {% if session.get('user') %}
+        <!-- Always visible -->
+        <a href="/"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <!-- Admin View -->
+        {% if session.get('role') == 'admin' %}
+            <a href="/admin"><i class="bi bi-shield-check"></i> Admin</a>
+        <!-- User View -->
+        {% else %}
             <a href="/submit"><i class="bi bi-pencil-square"></i> Submit</a>
             <a href="/track"><i class="bi bi-search"></i> Track</a>
-            <a href="/admin"><i class="bi bi-shield-check"></i> Admin</a>
-        </div>
+        {% endif %}
+        <!-- Logout -->
+        <a href="/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+
+    {% else %}
+        <!-- Default (Not Logged In) -->
+        <a href="/"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a href="/login"><i class="bi bi-box-arrow-in-right"></i> Login</a>
+        <a href="/signup"><i class="bi bi-person-plus"></i> Signup</a>
+    {% endif %}
+    </div>
     </nav>
     <div class="main-content">
         {% block content %}{% endblock %}

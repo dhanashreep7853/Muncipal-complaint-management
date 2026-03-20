@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
 
+{% if cid %}
+<script>
+    alert("Your Complaint ID is: {{ cid }}");
+</script>
+{% endif %}
+
 <div class="page-header animate">
     <div class="header-icon">🏛️</div>
     <div>
