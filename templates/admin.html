@@ -1,4 +1,7 @@
 {% extends "base.html" %}
+
+{% block body_class %}admin-page{% endblock %}
+
 {% block content %}
 
 <div class="page-header animate">
@@ -13,7 +16,7 @@
 
 <div class="d-flex gap-3 mb-4 animate-delay-1" style="flex-wrap:wrap;">
     <div style="background:var(--green-pale); padding:10px 20px; border-radius:10px; font-size:0.88rem; font-weight:600; color:var(--green-dark);">
-        📋 Total: {{ data|length }}
+        📋 Total Complaints: {{ data|length }}  
     </div>
 </div>
 
@@ -22,6 +25,7 @@
         <thead>
             <tr>
                 <th>#ID</th>
+                <th>Complaint_id</th>
                 <th>Citizen Name</th>
                 <th>Category</th>
                 <th>Priority</th>
@@ -34,22 +38,25 @@
 
         <tbody>
             {% for c in data %}
-            <tr class="{% if c[4]=='High' %}high-row{% elif c[4]=='Medium' %}medium-row{% endif %}">
+            <tr class="{% if c[4]|lower == 'high' %}high-row{% elif c[4]|lower == 'medium' %}medium-row{% endif %}">
 
-                <!-- ID -->
                 <td><strong style="color:var(--green-dark);">#{{ c[0] }}</strong></td>
 
-                <!-- NAME -->
+                <td>
+                    <strong style="color:var(--green-mid); font-size:0.85rem;">
+                        {{ c[1] }}
+                    </strong>
+                </td>
+
                 <td>
                     <div style="display:flex; align-items:center; gap:8px;">
                         <div style="width:32px;height:32px;background:var(--green-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;color:var(--green-mid);">
-                            {{ c[2][0].upper() }}
+                            {{ c[2][0].upper() if c[2] else '?' }}
                         </div>
                         {{ c[2] }}
                     </div>
                 </td>
 
-                <!-- CATEGORY -->
                 <td>
                     {% if c[3] == 'Garbage' %}🗑️
                     {% elif c[3] == 'Road Damage' %}🚧
@@ -59,23 +66,20 @@
                     {{ c[3] }}
                 </td>
 
-                <!-- PRIORITY -->
                 <td>
-                    {% if c[4]=="High" %}
+                    {% if c[4]|lower == "high" %}
                         <span class="badge-high">🔴 High</span>
-                    {% elif c[4]=="Medium" %}
+                    {% elif c[4]|lower == "medium" %}
                         <span class="badge-medium">🟡 Medium</span>
                     {% else %}
                         <span class="badge-low">🟢 Low</span>
                     {% endif %}
                 </td>
 
-                <!-- DESCRIPTION -->
-                <td style="max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text-muted); font-size:0.85rem;">
+                <td style="max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text-muted); font-size:0.85rem;" title="{{ c[5] }}">
                     {{ c[5] }}
                 </td>
 
-                <!-- STATUS -->
                 <td>
                     <span class="status-badge 
                         {% if c[6] == 'Pending' %}status-pending
@@ -90,12 +94,10 @@
                     </span>
                 </td>
 
-                <!-- DATE -->
                 <td style="font-size:0.8rem; color:var(--text-muted);">
                     {{ c[7] }}
                 </td>
 
-                <!-- ACTIONS -->
                 <td>
                     <div class="d-flex gap-2">
                         <a href="/update/{{ c[0] }}/progress" class="btn-action btn-progress">
@@ -112,7 +114,7 @@
 
             {% if data|length == 0 %}
             <tr>
-                <td colspan="8" style="text-align:center; padding:3rem; color:var(--text-muted);">
+                <td colspan="9" style="text-align:center; padding:3rem; color:var(--text-muted);">
                     <div style="font-size:2.5rem; margin-bottom:0.5rem;">📭</div>
                     No complaints submitted yet.
                 </td>

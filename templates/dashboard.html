@@ -1,9 +1,10 @@
 {% extends "base.html" %}
+
 {% block content %}
 
 {% if cid %}
 <script>
-    alert("Your Complaint ID is: {{ cid }}");
+    alert("Success! Your Complaint ID is: {{ cid }}");
 </script>
 {% endif %}
 
@@ -24,6 +25,7 @@
             <p style="color:var(--text-muted); font-size:0.82rem; margin-top:6px;">All time submissions</p>
         </div>
     </div>
+
     <div class="col-md-4 animate-delay-2">
         <div class="stat-card pending">
             <div class="icon-wrap"><i class="bi bi-hourglass-split"></i></div>
@@ -32,6 +34,7 @@
             <p style="color:var(--text-muted); font-size:0.82rem; margin-top:6px;">Awaiting action</p>
         </div>
     </div>
+
     <div class="col-md-4 animate-delay-3">
         <div class="stat-card resolved">
             <div class="icon-wrap"><i class="bi bi-check-circle"></i></div>
@@ -49,6 +52,7 @@
             <canvas id="statusChart" height="220"></canvas>
         </div>
     </div>
+
     <div class="col-md-6 animate-delay-3">
         <div class="stat-card" style="height:100%;">
             <h6 style="margin-bottom:1.2rem;">📈 Resolution Rate</h6>
@@ -61,34 +65,49 @@
 
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const total = {{ total }};
-    const pending = {{ pending }};
-    const resolved = {{ resolved }};
 
+<script>
+    // BUG FIX: Added '|default(0)' to ensure JS doesn't crash if Python sends empty data
+    const total = {{ total|default(0) }};
+    const pending = {{ pending|default(0) }};
+    const resolved = {{ resolved|default(0) }};
+    const inProgress = Math.max(0, total - pending - resolved);
+
+    /**
+     * Animates numbers from 0 to target for a "counting up" effect
+     */
     function animateCount(id, target) {
         let current = 0;
+        if (target === 0) {
+            document.getElementById(id).textContent = "0";
+            return;
+        }
         const step = Math.max(1, Math.floor(target / 40));
         const timer = setInterval(() => {
             current += step;
-            if (current >= target) { current = target; clearInterval(timer); }
+            if (current >= target) { 
+                current = target; 
+                clearInterval(timer); 
+            }
             document.getElementById(id).textContent = current;
         }, 30);
     }
 
+    // Trigger animations after a slight delay for better UX
     setTimeout(() => {
         animateCount('total-num', total);
         animateCount('pending-num', pending);
         animateCount('resolved-num', resolved);
     }, 400);
 
+    // --- Status Doughnut Chart ---
     const ctx1 = document.getElementById('statusChart').getContext('2d');
     new Chart(ctx1, {
         type: 'doughnut',
         data: {
             labels: ['Pending', 'Resolved', 'In Progress'],
             datasets: [{
-                data: [pending, resolved, Math.max(0, total - pending - resolved)],
+                data: [pending, resolved, inProgress],
                 backgroundColor: ['#e9c46a', '#40916c', '#74c69d'],
                 borderWidth: 0,
                 hoverOffset: 8
@@ -99,10 +118,11 @@
             plugins: {
                 legend: { position: 'bottom', labels: { font: { family: 'DM Sans', size: 12 }, padding: 16 } }
             },
-            cutout: '65%'
+            cutout: '65%' // Creates the "donut" hole
         }
     });
 
+    // --- Rate Bar Chart ---
     const ctx2 = document.getElementById('rateChart').getContext('2d');
     new Chart(ctx2, {
         type: 'bar',
@@ -120,8 +140,8 @@
             responsive: true,
             plugins: { legend: { display: false } },
             scales: {
-                y: { beginAtZero: true, grid: { color: '#edf7f0' }, ticks: { font: { family: 'DM Sans' } } },
-                x: { grid: { display: false }, ticks: { font: { family: 'DM Sans' } } }
+                y: { beginAtZero: true, grid: { color: '#edf7f0' } },
+                x: { grid: { display: false } }
             }
         }
     });

@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
 
-<!-- HEADER -->
-<meta http-equiv="Cache-Control" content="no-store" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
+<!-- Disable caching -->
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 
 <div class="page-header animate">
     <div class="header-icon">🔑</div>
@@ -16,20 +16,27 @@
     </div>
 </div>
 
-<!-- FORM -->
 <div class="form-card animate-delay-1">
     <form method="post" autocomplete="off">
 
+        <!-- Trick to disable autofill -->
+        <input type="text" style="display:none">
+        <input type="password" style="display:none">
+
         <!-- EMAIL -->
         <div class="mb-4">
-            <label class="form-label"><i class="bi bi-envelope"></i> &nbsp;Email Address</label>
-            <input name="email" type="email" class="form-control" placeholder="Enter your email" required>
+            <label class="form-label"><i class="bi bi-envelope"></i> Email Address</label>
+            <input name="email" type="email" class="form-control"
+                   placeholder="Enter your email"
+                   autocomplete="new-email" required>
         </div>
 
         <!-- PASSWORD -->
         <div class="mb-4">
-            <label class="form-label"><i class="bi bi-lock"></i> &nbsp;Password</label>
-            <input name="password" type="password" class="form-control" placeholder="Enter your password" required>
+            <label class="form-label"><i class="bi bi-lock"></i> Password</label>
+            <input name="password" type="password" class="form-control"
+                   placeholder="Enter your password"
+                   autocomplete="new-password" required>
         </div>
 
         <!-- BUTTON -->
@@ -37,7 +44,6 @@
             <i class="bi bi-box-arrow-in-right"></i> Login
         </button>
 
-        <!-- EXTRA LINK -->
         <div style="margin-top:12px; font-size:0.85rem; color:var(--text-muted);">
             Don’t have an account? 
             <a href="/signup" style="color:var(--green-mid); font-weight:600; text-decoration:none;">
@@ -48,40 +54,35 @@
     </form>
 </div>
 
-<!-- INLINE CSS -->
 <style>
-    /* Slight animation polish */
-    .form-card {
-        transition: all 0.3s ease;
-    }
-
-    .form-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-lg);
-    }
-
-    /* Input focus improvement */
-    .form-control:focus {
-        transform: scale(1.01);
-    }
-
-    /* Button spacing */
-    .btn-submit {
-        margin-top: 10px;
-        width: 100%;
-        justify-content: center;
-    }
-
-    /* Link hover */
-    a:hover {
-        text-decoration: underline;
-    }
+.form-card {
+    transition: all 0.3s ease;
+}
+.form-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+.form-control:focus {
+    transform: scale(1.01);
+}
+.btn-submit {
+    margin-top: 10px;
+    width: 100%;
+    justify-content: center;
+}
+a:hover {
+    text-decoration: underline;
+}
 </style>
 
 <script>
 window.onload = function() {
-    document.querySelector("form").reset();
-}
+    const form = document.querySelector("form");
+    form.reset();
+
+    // Force clear values (important for Chrome autofill)
+    document.querySelectorAll("input").forEach(input => input.value = "");
+};
 </script>
 
 {% endblock %}

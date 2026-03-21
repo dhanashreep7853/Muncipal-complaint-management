@@ -27,7 +27,7 @@
             font-family: 'DM Sans', sans-serif;
             background: var(--off-white);
             color: var(--text-dark);
-            min-height: 100vh;
+            /* min-height: 100vh; */
         }
         .navbar {
             background: var(--green-dark) !important;
@@ -78,9 +78,13 @@
             color: var(--white) !important;
         }
         .main-content {
-            padding: 2.5rem 2rem;
+            padding: 2rem 1.5rem;
             max-width: 1200px;
-            margin: 0 auto;
+            margin: auto;
+        }
+        /* ADMIN PAGE FULL WIDTH */
+        .admin-page .main-content {
+            max-width: 100%;
         }
         .page-header {
             margin-bottom: 2rem;
@@ -212,11 +216,15 @@
         .admin-table {
             background: var(--white);
             border-radius: 16px;
-            overflow: hidden;
+            overflow-x: auto;
             box-shadow: var(--shadow);
             border: 1px solid rgba(64,145,108,0.12);
         }
-        .admin-table table { margin: 0; width: 100%; }
+        .admin-table table { 
+            margin: 0; 
+            width: 100%; 
+            min-width: 1400px; 
+        }
         .admin-table thead th {
             background: var(--green-dark);
             color: var(--white);
@@ -226,12 +234,21 @@
             letter-spacing: 1px;
             padding: 14px 16px;
             border: none;
+            text-align: center;
         }
         .admin-table tbody td {
             padding: 13px 16px;
             font-size: 0.9rem;
             border-bottom: 1px solid #edf7f0;
             vertical-align: middle;
+        }
+        .admin-table td {
+            white-space: nowrap;
+        }
+
+        /* ACTION COLUMN FIX */
+        .admin-table td:last-child {
+            min-width: 160px;
         }
         .admin-table tbody tr:last-child td { border-bottom: none; }
         .admin-table tbody tr:hover { background: #f4fbf6; }
@@ -286,14 +303,14 @@
         .animate-delay-3 { animation-delay: 0.3s; opacity: 0; animation-fill-mode: forwards; animation-name: fadeInUp; animation-duration: 0.5s; }
     </style>
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <nav class="navbar navbar-expand-lg">
         <a class="navbar-brand" href="/">
             <div class="emblem">🏛️</div>
             Municipal Complaint System
         </a>
         <div class="nav-links ms-auto">
-    {% if session.get('user') %}
+        {% if session.get('user') %}
         <!-- Always visible -->
         <a href="/"><i class="bi bi-speedometer2"></i> Dashboard</a>
         <!-- Admin View -->
