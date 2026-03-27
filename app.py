@@ -4,7 +4,7 @@ from datetime import datetime
 import random
 import string
 from werkzeug.security import generate_password_hash, check_password_hash
-
+import os
 
 app = Flask(__name__)
 app.secret_key = "secret123"
@@ -163,7 +163,8 @@ def signup():
         password = request.form['password']
         role = request.form['role']
         admin_code = request.form.get('admin_code')
-
+        hashed_pw = generate_password_hash(password)
+        
         # 🔒 Admin security
         if role == "admin" and admin_code != "ADMIN@123":
             return "Invalid Admin Code!"
@@ -191,13 +192,15 @@ def login():
 
         with connect() as conn:
             cur = conn.cursor()
-            cur.execute("SELECT * FROM users WHERE email=? AND password=?", (email, password))
+            cur.execute("SELECT * FROM users WHERE email=?", (email,))
             user = cur.fetchone()
 
-        if user:
-            session['user'] = user[1]
-            session['role'] = user[4]
-            return redirect('/')
+        # Check the hashed password
+        if user and check_password_hash(user['password'], password):
+            session['user'] = user['name']
+            session['role'] = user['role']
+            return redirect('/') 
+        
         else:
             return "Invalid Email or Password!"
 
