@@ -1,144 +1,569 @@
 {% extends "base.html" %}
 
-{% block body_class %}admin-page{% endblock %}
-
 {% block content %}
 
-<div class="page-header animate">
-    <div class="header-icon">🛡️</div>
-    <div>
-        <h2>Admin Panel</h2>
-        <p style="color: var(--text-muted); font-size:0.88rem; margin:0;">
-            Manage and resolve citizen complaints
+<style>
+/* Force full-width override — breaks out of any Bootstrap container in base.html */
+.content-wrapper, .container, .container-fluid, main, .main-content {
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    width: 100% !important;
+}
+</style>
+
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+
+<div class="admin-page">
+
+    <!-- ══════════════════════════════════════════
+         TOP BAR — heading left, stats dropdown right
+    ═══════════════════════════════════════════ -->
+    <div class="top-bar">
+
+        <div class="heading-block">
+            <div class="heading-row">
+                <span class="heading-icon">🛡️</span>
+                <h2 class="heading-title">Admin Control Panel</h2>
+            </div>
+            <p class="heading-sub">
+                Official Records:
+                <span class="state-tag"><i class="bi bi-geo-alt-fill"></i> {{ admin_state if admin_state else 'Maharashtra' }}</span>
+            </p>
+            <div class="heading-bar"></div>
+        </div>
+
+        <!-- Stats dropdown trigger button -->
+        <div class="stats-dropdown-wrapper">
+            <button class="stats-trigger" onclick="toggleStats()">
+                <i class="bi bi-bar-chart-fill"></i>
+                Overview
+                <i class="bi bi-chevron-down chev" id="statsChev"></i>
+            </button>
+
+            <!-- Dropdown with 4 stats stacked vertically -->
+            <div class="stats-dropdown" id="statsDropdown">
+                <div class="stat-item">
+                    <span class="stat-dot dot-total"></span>
+                    <div class="stat-info">
+                        <span class="stat-val">{{ total }}</span>
+                        <span class="stat-lbl">Total Filed</span>
+                    </div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-dot dot-pending"></span>
+                    <div class="stat-info">
+                        <span class="stat-val">{{ pending }}</span>
+                        <span class="stat-lbl">Pending</span>
+                    </div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-dot dot-progress"></span>
+                    <div class="stat-info">
+                        <span class="stat-val">{{ progress }}</span>
+                        <span class="stat-lbl">In Progress</span>
+                    </div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-dot dot-resolved"></span>
+                    <div class="stat-info">
+                        <span class="stat-val">{{ resolved }}</span>
+                        <span class="stat-lbl">Resolved</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         SEARCH BAR — full width
+         Server-side: GET /admin?search=...
+         Client-side: liveHighlight() on oninput
+    ═══════════════════════════════════════════ -->
+    <div class="search-area">
+        <form method="get" action="/admin" id="searchForm">
+            <div class="search-box">
+                <i class="bi bi-search search-ico"></i>
+                <input
+                    type="text"
+                    name="search"
+                    id="searchInput"
+                    value="{{ search if search else '' }}"
+                    placeholder="Search by Complaint ID, Name, Category, Status, Location..."
+                    class="search-field"
+                    autocomplete="off"
+                    oninput="liveHighlight(this.value)">
+                <button type="submit" class="search-btn">Search</button>
+                {% if search %}
+                <a href="/admin" class="clear-btn" title="Clear"><i class="bi bi-x-lg"></i></a>
+                {% endif %}
+            </div>
+        </form>
+        {% if search %}
+        <p class="result-info">
+            Showing <strong>{{ data|length }}</strong> result{{ 's' if data|length != 1 }} for "<em>{{ search }}</em>"
         </p>
+        {% endif %}
     </div>
-</div>
 
-<div class="d-flex gap-3 mb-4 animate-delay-1" style="flex-wrap:wrap;">
-    <div style="background:var(--green-pale); padding:10px 20px; border-radius:10px; font-size:0.88rem; font-weight:600; color:var(--green-dark);">
-        📋 Total Complaints: {{ data|length }}  
-    </div>
-</div>
+    <!-- ══════════════════════════════════════════
+         TABLE — sorted by deadline (urgent first),
+                 resolved complaints pushed to bottom.
+         Columns added: Deadline, Location, Phone
+         Actions: confirmation dialog before saving
+    ═══════════════════════════════════════════ -->
+    <div class="table-card">
+        <div class="table-responsive">
+            <table class="admin-table" id="adminTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Complaint ID</th>
+                        <th>Citizen & Contact</th>
+                        <th>Category</th>
+                        <th>Description & Location</th>
+                        <th>Photo</th>
+                        <th>Status</th>
+                        <th>Submitted</th>
+                        <!-- Deadline column — shows SLA deadline & days remaining -->
+                        <th>Deadline</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
 
-<div class="admin-table animate-delay-2">
-    <table class="table">
-        <thead>
-            <tr>
-                <th>#ID</th>
-                <th>Complaint_id</th>
-                <th>Citizen Name</th>
-                <th>Category</th>
-                <th>Priority</th>
-                <th>Description</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
+                    {% for item in data %}
+                    {% set c = item.c %}
 
-        <tbody>
-            {% for c in data %}
-            <tr class="{% if c[4]|lower == 'high' %}high-row{% elif c[4]|lower == 'medium' %}medium-row{% endif %}">
+                    <!-- Resolved rows get a dimmed class to visually sink them -->
+                    <tr class="trow {% if c['status'] == 'Resolved' %}row-resolved{% endif %}">
 
-                <td><strong style="color:var(--green-dark);">#{{ c[0] }}</strong></td>
+                        <td class="td-num">{{ loop.index }}</td>
 
-                <td>
-                    <strong style="color:var(--green-mid); font-size:0.85rem;">
-                        {{ c[1] }}
-                    </strong>
-                </td>
+                        <!-- Complaint ID -->
+                        <td><span class="id-badge searchable">{{ c['complaint_id'] }}</span></td>
 
-                <td>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <div style="width:32px;height:32px;background:var(--green-pale);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;color:var(--green-mid);">
-                            {{ c[2][0].upper() if c[2] else '?' }}
-                        </div>
-                        {{ c[2] }}
-                    </div>
-                </td>
+                        <!-- Citizen name + phone number -->
+                        <td>
+                            <div class="citizen-cell">
+                                <div class="avatar">{{ c['name'][0].upper() if c['name'] else '?' }}</div>
+                                <div>
+                                    <div class="citizen-name searchable">{{ c['name'] if c['name'] else 'Anonymous' }}</div>
+                                    <!-- Phone number shown below name -->
+                                    {% if c['mobile'] %}
+                                    <div class="citizen-phone searchable">
+                                        <i class="bi bi-telephone-fill"></i> {{ c['mobile'] }}
+                                    </div>
+                                    {% else %}
+                                    <div class="citizen-phone no-phone">No phone</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
 
-                <td>
-                    {% if c[3] == 'Garbage' %}🗑️
-                    {% elif c[3] == 'Road Damage' %}🚧
-                    {% elif c[3] == 'Streetlight' %}💡
-                    {% elif c[3] == 'Water Supply' %}💧
-                    {% elif c[3] == 'Drainage' %}🌊
-                    {% elif c[3] == 'Mosquito' %}🦟
-                    {% elif c[3] == 'Construction' %}🏗️
-                    {% elif c[3] == 'Encroachment' %}🏪
-                    {% elif c[3] == 'Hoardings' %}🖼️
-                    {% elif c[3] == 'Buildings' %}🏚️
-                    {% elif c[3] == 'Tree Cutting' %}🪓
-                    {% elif c[3] == 'Garden' %}🎡
-                    {% elif c[3] == 'air Pollution' %}💨
-                    {% elif c[3] == 'Dead Animal' %}🐕
-                    {% elif c[3] == 'Toilet' %}🚻   
-                    {% elif c[3] == 'Food Safety' %}🍲
-                    {% elif c[3] == 'Stray Cattle' %}🐄
-                    {% elif c[3] == 'Noise Pollution' %}📢
-                    {% elif c[3] == 'Manhole' %}🕳️
-                    {% elif c[3] == 'Dog' %}🐕‍🦺
-                    {% elif c[3] == 'Tax' %}💳
-                    {% elif c[3] == 'Fire' %}🔥
-                    {% else %}❓{% endif %}
-                </td>
+                        <!-- Category -->
+                        <td><span class="cat-chip searchable">{{ c['category'] }}</span></td>
 
-                <td>
-                    {% if c[4]|lower == "high" %}
-                        <span class="badge-high">🔴 High</span>
-                    {% elif c[4]|lower == "medium" %}
-                        <span class="badge-medium">🟡 Medium</span>
-                    {% else %}
-                        <span class="badge-low">🟢 Low</span>
+                        <!-- Description + location stacked -->
+                        <td>
+                            <div class="desc-text searchable" title="{{ c['description'] }}">{{ c['description'] }}</div>
+                            {% if c['address'] %}
+                            <div class="location-text searchable" title="{{ c['address'] }}">
+                                <i class="bi bi-geo-alt-fill loc-icon"></i>{{ c['address'] }}
+                            </div>
+                            {% endif %}
+                        </td>
+
+                        <!-- Photo thumbnail -->
+                        <td>
+                            {% if c['image'] %}
+                            <a href="/static/uploads/{{ c['image'] }}" target="_blank">
+                                <img src="/static/uploads/{{ c['image'] }}" class="thumb" alt="Photo">
+                            </a>
+                            {% else %}
+                            <span class="no-img">—</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Status pill -->
+                        <td>
+                            <span class="status-pill searchable
+                                {% if c['status'] == 'Pending' %}pill-pending
+                                {% elif c['status'] == 'In Progress' %}pill-progress
+                                {% else %}pill-resolved{% endif %}">
+                                {{ c['status'] }}
+                            </span>
+                        </td>
+
+                        <!-- Submitted date + time -->
+                        <td class="td-date">
+                            {% if c['timestamp'] %}
+                            <div class="date-main">{{ c['timestamp'][:10] }}</div>
+                            <div class="date-time"><i class="bi bi-clock"></i> {{ c['timestamp'][11:16] }}</div>
+                            {% else %}—{% endif %}
+                        </td>
+
+                        <!-- Deadline column:
+                             - Shows deadline date
+                             - Shows days remaining (red if ≤1, orange if ≤3)
+                             - Shows "Resolved" badge if done
+                        -->
+                        <td class="td-deadline">
+                            {% if c['status'] == 'Resolved' %}
+                                <span class="deadline-done">✅ Resolved</span>
+                            {% else %}
+                                <div class="deadline-date">{{ item.deadline_str }}</div>
+                                {% if item.remaining is not none %}
+                                    {% if item.remaining < 0 %}
+                                        <div class="days-tag days-overdue">Overdue!</div>
+                                    {% elif item.remaining <= 1 %}
+                                        <div class="days-tag days-urgent">{{ item.remaining }}d left</div>
+                                    {% elif item.remaining <= 3 %}
+                                        <div class="days-tag days-warn">{{ item.remaining }}d left</div>
+                                    {% else %}
+                                        <div class="days-tag days-ok">{{ item.remaining }}d left</div>
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+                        </td>
+
+                        <!-- Action buttons with confirmation dialog.
+                             confirmAction(url, label) is called on click —
+                             shows a custom confirm modal before navigating.
+                        -->
+                        <td>
+                            <div class="act-group">
+                                {% if c['status'] == 'Pending' %}
+                                    <a href="#"
+                                       onclick="confirmAction('/update/{{ c['id'] }}/progress', 'Move to In Progress')"
+                                       class="act-btn act-blue" title="Set In Progress">
+                                        <i class="bi bi-play-fill"></i>
+                                    </a>
+                                    <a href="#"
+                                       onclick="confirmAction('/update/{{ c['id'] }}/resolved', 'Mark as Resolved')"
+                                       class="act-btn act-green" title="Mark Resolved">
+                                        <i class="bi bi-check-lg"></i>
+                                    </a>
+                                {% elif c['status'] == 'In Progress' %}
+                                    <a href="#"
+                                       onclick="confirmAction('/update/{{ c['id'] }}/resolved', 'Mark as Resolved')"
+                                       class="act-btn act-green" title="Mark Resolved">
+                                        <i class="bi bi-check-lg"></i>
+                                    </a>
+                                {% else %}
+                                    <span class="done-badge"><i class="bi bi-shield-check"></i> Done</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                    {% if not data %}
+                    <tr>
+                        <td colspan="10" class="empty-cell">
+                            <div class="empty-state">
+                                <div style="font-size:2.5rem">📭</div>
+                                <p class="empty-title">No complaints found</p>
+                                <p class="empty-sub">
+                                    {% if search %}
+                                        No results for "<strong>{{ search }}</strong>".
+                                        <a href="/admin" class="clear-link">Clear search</a>
+                                    {% else %}
+                                        No complaints submitted yet for {{ admin_state }}.
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
                     {% endif %}
-                </td>
 
-                <td style="max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text-muted); font-size:0.85rem;" title="{{ c[5] }}">
-                    {{ c[5] }}
-                </td>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-                <td>
-                    <span class="status-badge 
-                        {% if c[6] == 'Pending' %}status-pending
-                        {% elif c[6] == 'In Progress' %}status-progress
-                        {% else %}status-resolved{% endif %}">
-
-                        {% if c[6] == 'Pending' %}⏳
-                        {% elif c[6] == 'In Progress' %}🔄
-                        {% else %}✅{% endif %}
-
-                        {{ c[6] }}
-                    </span>
-                </td>
-
-                <td style="font-size:0.8rem; color:var(--text-muted);">
-                    {{ c[7] }}
-                </td>
-
-                <td>
-                    <div class="d-flex gap-2">
-                        <a href="/update/{{ c[0] }}/progress" class="btn-action btn-progress">
-                            <i class="bi bi-arrow-repeat"></i> Progress
-                        </a>
-                        <a href="/update/{{ c[0] }}/resolved" class="btn-action btn-resolve">
-                            <i class="bi bi-check2"></i> Resolve
-                        </a>
-                    </div>
-                </td>
-
-            </tr>
-            {% endfor %}
-
-            {% if data|length == 0 %}
-            <tr>
-                <td colspan="9" style="text-align:center; padding:3rem; color:var(--text-muted);">
-                    <div style="font-size:2.5rem; margin-bottom:0.5rem;">📭</div>
-                    No complaints submitted yet.
-                </td>
-            </tr>
-            {% endif %}
-        </tbody>
-    </table>
 </div>
+
+<!-- ══════════════════════════════════════════
+     CONFIRMATION MODAL
+     Appears when admin clicks any action button.
+     Only navigates to the action URL if confirmed.
+═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal-box">
+        <div class="modal-icon">⚠️</div>
+        <h4 class="modal-title">Confirm Action</h4>
+        <p class="modal-msg" id="modalMsg">Are you sure you want to proceed?</p>
+        <div class="modal-btns">
+            <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+            <a href="#" class="modal-confirm" id="modalConfirmBtn">Yes, Confirm</a>
+        </div>
+    </div>
+</div>
+
+<style>
+:root {
+    --green-deep:  #0f3d26;
+    --green-dark:  #1a5c38;
+    --green-mid:   #2d8653;
+    --green-faint: #eaf4ee;
+    --green-glow:  rgba(45,134,83,0.12);
+    --gold:        #f5c518;
+    --text-main:   #0f2d1c;
+    --text-muted:  #5a7a65;
+    --border:      #d4e8da;
+    --white:       #ffffff;
+    --shadow:      0 2px 16px rgba(15,61,38,0.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--green-faint);}
+
+/* PAGE */
+.admin-page{padding:28px 32px;display:flex;flex-direction:column;gap:22px;min-height:100vh;width:100%;max-width:100%;box-sizing:border-box;}
+
+/* TOP BAR */
+.top-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+.heading-row{display:flex;align-items:center;gap:10px;margin-bottom:5px;}
+.heading-icon{font-size:1.8rem;line-height:1;}
+.heading-title{font-family:'Sora',sans-serif;font-size:1.7rem;font-weight:800;color:var(--green-deep);letter-spacing:-0.3px;}
+.heading-sub{color:var(--text-muted);font-size:0.87rem;margin-bottom:14px;}
+.state-tag{background:#dcfce7;color:#166534;padding:3px 11px;border-radius:50px;font-weight:700;font-size:0.76rem;border:1px solid #bbf7d0;margin-left:4px;}
+.heading-bar{height:4px;width:52px;background:var(--gold);border-radius:20px;}
+
+/* STATS DROPDOWN */
+.stats-dropdown-wrapper{position:relative;flex-shrink:0;margin-top:6px;}
+.stats-trigger{display:flex;align-items:center;gap:8px;background:var(--green-dark);color:#fff;border:none;border-radius:12px;padding:11px 18px;font-family:'Sora',sans-serif;font-size:0.84rem;font-weight:700;cursor:pointer;transition:background 0.2s;letter-spacing:0.3px;}
+.stats-trigger:hover{background:var(--green-deep);}
+.chev{transition:transform 0.22s;font-size:0.72rem;}
+.chev.open{transform:rotate(180deg);}
+.stats-dropdown{display:none;position:absolute;right:0;top:calc(100% + 8px);background:var(--white);border:1px solid var(--border);border-radius:14px;padding:4px 0;min-width:190px;box-shadow:0 8px 28px rgba(15,61,38,0.13);z-index:200;}
+.stats-dropdown.open{display:block;animation:dropIn 0.16s ease-out;}
+@keyframes dropIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+.stat-item{display:flex;align-items:center;gap:12px;padding:12px 16px;}
+.stat-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.dot-total{background:var(--green-mid);}
+.dot-pending{background:#f97316;}
+.dot-progress{background:#3b82f6;}
+.dot-resolved{background:#22c55e;}
+.stat-info{display:flex;flex-direction:column;gap:1px;}
+.stat-val{font-family:'Sora',sans-serif;font-weight:800;font-size:1.05rem;color:var(--text-main);line-height:1;}
+.stat-lbl{font-size:0.73rem;color:var(--text-muted);font-weight:500;}
+.stat-divider{height:1px;background:var(--border);margin:0 12px;}
+
+/* SEARCH */
+.search-area{display:flex;flex-direction:column;gap:7px;max-width:560px;}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:7px 8px 7px 14px;box-shadow:var(--shadow);width:100%;transition:border-color 0.2s,box-shadow 0.2s;}
+.search-box:focus-within{border-color:var(--green-mid);box-shadow:0 0 0 4px var(--green-glow);}
+.search-ico{color:var(--text-muted);font-size:0.92rem;flex-shrink:0;}
+.search-field{flex:1;border:none;outline:none;font-size:0.9rem;color:var(--text-main);font-family:'DM Sans',sans-serif;background:transparent;}
+.search-field::placeholder{color:#a0b8a8;}
+.search-btn{background:linear-gradient(135deg,var(--green-mid),var(--green-dark));color:#fff;border:none;border-radius:9px;padding:9px 22px;font-family:'Sora',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 0.2s;}
+.search-btn:hover{box-shadow:0 4px 12px rgba(26,92,56,0.3);transform:translateY(-1px);}
+.clear-btn{background:#fef2f2;color:#ef4444;border:1px solid #fecaca;border-radius:9px;padding:9px 13px;text-decoration:none;font-size:0.82rem;display:flex;align-items:center;transition:background 0.2s;}
+.clear-btn:hover{background:#fee2e2;}
+.result-info{font-size:0.81rem;color:var(--text-muted);padding-left:4px;}
+
+/* TABLE CARD */
+.table-card{background:var(--white);border-radius:16px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;width:100%;flex:1;}
+.table-responsive{overflow-x:auto;}
+
+/* TABLE */
+.admin-table{width:100%;border-collapse:collapse;min-width:1280px;table-layout:auto;}
+.admin-table thead th{background:var(--green-deep);color:#fff;padding:14px 16px;font-family:'Sora',sans-serif;font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;font-weight:700;white-space:nowrap;}
+.admin-table tbody td{padding:13px 16px;vertical-align:middle;border-bottom:1px solid #f0f7f3;font-size:0.85rem;color:var(--text-main);}
+.trow:hover td{background:#f6fbf8;}
+.trow:last-child td{border-bottom:none;}
+
+/* Resolved rows — subtle green tint, no blur/opacity */
+.row-resolved td{background:#f7fdf9;}
+.row-resolved:hover td{background:#edfaf2;}
+
+/* Highlighted row when search matches */
+.trow.highlighted td{background:#fffdf0 !important;}
+mark.hl{background:#fef08a;border-radius:3px;padding:0 2px;font-weight:700;color:#713f12;font-style:normal;}
+
+.td-num{color:var(--text-muted);font-size:0.77rem;width:36px;}
+.td-date{white-space:nowrap;width:95px;}
+.td-deadline{white-space:nowrap;width:110px;}
+
+/* ID */
+.id-badge{font-family:'Courier New',monospace;background:#f1f5f9;color:#334155;padding:3px 9px;border-radius:6px;font-weight:800;font-size:0.74rem;border:1px solid #e2e8f0;white-space:nowrap;}
+
+/* Citizen + phone */
+.citizen-cell{display:flex;align-items:center;gap:9px;}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--green-mid);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.82rem;flex-shrink:0;}
+.citizen-name{font-weight:600;font-size:0.84rem;line-height:1.3;}
+.citizen-phone{font-size:0.73rem;color:var(--text-muted);margin-top:2px;display:flex;align-items:center;gap:3px;}
+.no-phone{font-size:0.72rem;color:#c4d4c8;}
+
+/* Category */
+.cat-chip{background:#eff6ff;color:#1e40af;font-size:0.71rem;padding:3px 10px;border-radius:6px;font-weight:700;white-space:nowrap;border:1px solid #dbeafe;}
+
+/* Description + location */
+.desc-text{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-muted);font-size:0.81rem;cursor:default;}
+.location-text{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:0.72rem;color:var(--text-muted);margin-top:4px;display:flex;align-items:center;gap:3px;cursor:default;}
+.loc-icon{color:#ef4444;font-size:0.72rem;flex-shrink:0;}
+
+/* Photo */
+.thumb{width:42px;height:42px;object-fit:cover;border-radius:8px;border:2px solid var(--border);transition:transform 0.2s;display:block;}
+.thumb:hover{transform:scale(1.2);box-shadow:0 4px 10px rgba(0,0,0,0.12);}
+.no-img{color:var(--text-muted);font-size:0.78rem;}
+
+/* Status */
+.status-pill{padding:4px 11px;border-radius:50px;font-size:0.67rem;font-weight:800;text-transform:uppercase;white-space:nowrap;display:inline-block;}
+.pill-pending {background:#fff7ed;color:#c2410c;border:1px solid #ffedd5;}
+.pill-progress{background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe;}
+.pill-resolved{background:#f0fdf4;color:#15803d;border:1px solid #dcfce7;}
+
+/* Submitted date */
+.date-main{font-weight:600;font-size:0.81rem;}
+.date-time{font-size:0.71rem;color:var(--text-muted);display:flex;align-items:center;gap:4px;margin-top:3px;}
+
+/* Deadline column */
+.deadline-date{font-weight:700;font-size:0.8rem;color:var(--text-main);}
+.days-tag{display:inline-block;margin-top:4px;padding:2px 8px;border-radius:6px;font-size:0.68rem;font-weight:800;font-family:'Sora',sans-serif;}
+.days-ok     {background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;}
+.days-warn   {background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;}
+.days-urgent {background:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
+.days-overdue{background:#dc2626;color:#fff;border:none;}
+.deadline-done{font-size:0.72rem;color:#15803d;font-weight:700;}
+
+/* Actions */
+.act-group{display:flex;align-items:center;gap:7px;}
+.act-btn{width:33px;height:33px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-size:0.92rem;transition:all 0.2s;}
+.act-blue {background:#dbeafe;color:#1d4ed8;}
+.act-green{background:#dcfce7;color:#15803d;}
+.act-btn:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(0,0,0,0.1);filter:brightness(0.9);}
+.done-badge{color:#059669;font-weight:800;font-size:0.7rem;display:flex;align-items:center;gap:4px;}
+
+/* Empty state */
+.empty-cell{text-align:center;padding:60px 20px !important;background:#fafcfa;}
+.empty-state{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.empty-title{font-family:'Sora',sans-serif;font-weight:800;color:var(--green-deep);font-size:0.94rem;}
+.empty-sub{color:var(--text-muted);font-size:0.83rem;line-height:1.6;}
+.clear-link{color:var(--green-mid);font-weight:700;text-decoration:none;}
+.clear-link:hover{text-decoration:underline;}
+
+/* ── CONFIRMATION MODAL ── */
+.modal-overlay{
+    display:none;position:fixed;inset:0;
+    background:rgba(15,61,38,0.45);
+    backdrop-filter:blur(3px);
+    z-index:1000;
+    align-items:center;justify-content:center;
+}
+.modal-overlay.show{display:flex;animation:fadeOverlay 0.18s ease-out;}
+@keyframes fadeOverlay{from{opacity:0;}to{opacity:1;}}
+
+.modal-box{
+    background:var(--white);border-radius:20px;
+    padding:36px 32px;max-width:380px;width:90%;
+    text-align:center;
+    box-shadow:0 20px 60px rgba(15,61,38,0.2);
+    animation:popIn 0.2s ease-out;
+}
+@keyframes popIn{from{opacity:0;transform:scale(0.92);}to{opacity:1;transform:scale(1);}}
+.modal-icon{font-size:2.5rem;margin-bottom:12px;}
+.modal-title{font-family:'Sora',sans-serif;font-weight:800;color:var(--green-deep);font-size:1.1rem;margin-bottom:8px;}
+.modal-msg{color:var(--text-muted);font-size:0.88rem;line-height:1.6;margin-bottom:24px;}
+.modal-btns{display:flex;gap:12px;justify-content:center;}
+.modal-cancel{
+    padding:10px 24px;border-radius:10px;
+    background:#f1f5f9;color:#475569;
+    border:1px solid #e2e8f0;font-weight:700;
+    font-size:0.85rem;cursor:pointer;transition:background 0.2s;
+    font-family:'Sora',sans-serif;
+}
+.modal-cancel:hover{background:#e2e8f0;}
+.modal-confirm{
+    padding:10px 24px;border-radius:10px;
+    background:linear-gradient(135deg,var(--green-mid),var(--green-dark));
+    color:#fff;font-weight:700;font-size:0.85rem;
+    text-decoration:none;transition:all 0.2s;
+    font-family:'Sora',sans-serif;
+    display:inline-flex;align-items:center;
+}
+.modal-confirm:hover{box-shadow:0 4px 14px rgba(26,92,56,0.35);color:#fff;}
+
+@media(max-width:768px){
+    .admin-page{padding:18px 14px;}
+    .top-bar{flex-direction:column;}
+}
+</style>
+
+<script>
+/* ── STATS DROPDOWN TOGGLE ── */
+function toggleStats() {
+    document.getElementById('statsDropdown').classList.toggle('open');
+    document.getElementById('statsChev').classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+    const w = document.querySelector('.stats-dropdown-wrapper');
+    if (w && !w.contains(e.target)) {
+        document.getElementById('statsDropdown').classList.remove('open');
+        document.getElementById('statsChev').classList.remove('open');
+    }
+});
+
+/* ── CONFIRMATION MODAL ──
+   Called when admin clicks any action button.
+   Sets the confirm button href to the action URL,
+   shows the modal. Only navigates if admin clicks Confirm.
+*/
+function confirmAction(url, label) {
+    document.getElementById('modalMsg').textContent =
+        'Are you sure you want to "' + label + '" this complaint? This action cannot be undone.';
+    document.getElementById('modalConfirmBtn').href = url;
+    document.getElementById('confirmModal').classList.add('show');
+    return false; // prevent default link navigation
+}
+function closeModal() {
+    document.getElementById('confirmModal').classList.remove('show');
+}
+// Close modal on overlay click (outside modal box)
+document.getElementById('confirmModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
+});
+
+/* ── LIVE HIGHLIGHT ── */
+function liveHighlight(query) {
+    const rows = document.querySelectorAll('#tableBody .trow');
+    const q    = query.trim().toLowerCase();
+
+    rows.forEach(function(row) {
+        row.querySelectorAll('.searchable').forEach(function(cell) {
+            cell.innerHTML = cell.innerHTML.replace(/<mark class="hl">(.*?)<\/mark>/gi, '$1');
+        });
+        row.classList.remove('highlighted');
+
+        if (!q) return;
+
+        var matched = false;
+        var escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        var regex   = new RegExp('(' + escaped + ')', 'gi');
+
+        row.querySelectorAll('.searchable').forEach(function(cell) {
+            if (cell.textContent.toLowerCase().includes(q)) {
+                matched = true;
+                cell.innerHTML = cell.innerHTML.replace(regex, '<mark class="hl">$1</mark>');
+            }
+        });
+
+        if (matched) row.classList.add('highlighted');
+    });
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+    var val = document.getElementById('searchInput').value;
+    if (val) liveHighlight(val);
+});
+</script>
 
 {% endblock %}

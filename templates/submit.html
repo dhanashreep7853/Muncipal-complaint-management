@@ -1,95 +1,477 @@
 {% extends "base.html" %}
-{% block content %}
 
-<div class="page-header animate">
-    <div class="header-icon">📝</div>
-    <div>
-        <h2>Submit a Complaint</h2>
-        <p style="color: var(--text-muted); font-size:0.88rem; margin:0;">Fill in the details and we'll route it to the right department</p>
+{% block content %}
+<meta http-equiv="Cache-Control" content="no-store" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+
+<div class="complaint-page">
+
+    <!-- LEFT DECORATIVE PANEL -->
+    <div class="complaint-left">
+        <div class="left-pattern"></div>
+        <div class="left-content">
+            <div class="brand-badge">
+                <span class="badge-icon">📝</span>
+                <span class="badge-text">GovPortal</span>
+            </div>
+            <h1 class="left-headline">Report.<br>Track.<br>Resolve.</h1>
+            <p class="left-sub">Submit civic complaints directly to the concerned municipal department. Your issue is logged, tracked, and resolved with full transparency.</p>
+            <div class="left-pills">
+                <span class="pill">✔ Instant complaint ID</span>
+                <span class="pill">✔ GPS-based routing</span>
+                <span class="pill">✔ Real-time tracking</span>
+            </div>
+        </div>
+        <div class="left-circle c1"></div>
+        <div class="left-circle c2"></div>
+    </div>
+
+    <!-- RIGHT FORM PANEL -->
+    <div class="complaint-right">
+
+        <!-- PAGE HEADING -->
+        <div class="form-heading">
+            <div class="heading-row">
+                <span class="heading-icon">📝</span>
+                <h2 class="heading-title">Submit a Complaint</h2>
+            </div>
+            <p class="heading-sub">Provide issue details and we'll route it to the right department</p>
+            <div class="heading-bar"></div>
+        </div>
+
+        <!-- SUCCESS CARD -->
+        {% if success_cid %}
+        <div class="success-card">
+            <div class="success-icon">✅</div>
+            <div class="success-body">
+                <h5 class="success-title">Complaint Registered Successfully!</h5>
+                <p class="success-sub">Save your Complaint ID below. You will need it to track your complaint status on the Track Page.</p>
+                <div class="cid-box">
+                    <code id="cmpId" class="cid-code">{{ success_cid }}</code>
+                    <button type="button" class="cid-copy-btn" onclick="copyCid()">
+                        <i class="bi bi-clipboard"></i> Copy ID
+                    </button>
+                </div>
+                <a href="/track" class="cid-track-btn">
+                    <i class="bi bi-search"></i> Go to Track Page
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- FORM CARD -->
+        <div class="form-card">
+            <form method="post" enctype="multipart/form-data">
+
+                <!-- Full Name -->
+                <div class="field-group" style="--delay: 0.04s">
+                    <label class="field-label"><i class="bi bi-person-fill"></i> Full Name</label>
+                    <input class="field-input" name="name" placeholder="Enter your full name" required>
+                </div>
+
+                <!-- Mobile -->
+                <div class="field-group" style="--delay: 0.08s">
+                    <label class="field-label"><i class="bi bi-phone-fill"></i> Mobile Number</label>
+                    <input type="tel" class="field-input" name="mobile" placeholder="+91 XXXXX XXXXX" required>
+                </div>
+
+                <!-- Category -->
+                <div class="field-group" style="--delay: 0.12s">
+                    <label class="field-label"><i class="bi bi-tag-fill"></i> Complaint Category</label>
+                    <select class="field-input field-select" name="category" required>
+                        <option value="" disabled selected>Select a category</option>
+                        <option value="Garbage">🗑️ Garbage Collection</option>
+                        <option value="Road Damage">🚧 Road Damage</option>
+                        <option value="Streetlight">💡 Streetlight Issue</option>
+                        <option value="Water Supply">💧 Water Supply</option>
+                        <option value="Drainage">🌊 Drainage Problem</option>
+                        <option value="Mosquito">🦟 Mosquito Menace</option>
+                        <option value="Construction">🏗️ Illegal Construction</option>
+                        <option value="Encroachment">🏪 Footpath Encroachment</option>
+                        <option value="Hoardings">🖼️ Unauthorized Hoardings</option>
+                        <option value="Buildings">🏚️ Dangerous Buildings</option>
+                        <option value="Tree Cutting">🪓 Illegal Tree Cutting</option>
+                        <option value="Garden">🎡 Garden Maintenance</option>
+                        <option value="air Pollution">💨 Air Pollution</option>
+                        <option value="Dead Animal">🐕 Dead Animal Removal</option>
+                        <option value="Toilet">🚻 Public Toilet Issues</option>
+                        <option value="Food Safety">🍲 Food Safety</option>
+                        <option value="Stray Cattle">🐄 Stray Cattle</option>
+                        <option value="Noise Pollution">📢 Noise Pollution</option>
+                        <option value="Manhole">🕳️ Missing Manhole Covers</option>
+                        <option value="Dog">🐕‍🦺 Stray Dog Menace</option>
+                        <option value="Tax">💳 Property Tax Issues</option>
+                        <option value="Fire">🔥 Fire Safety</option>
+                        <option value="other">❓ Other</option>
+                    </select>
+                </div>
+
+                <!-- Description -->
+                <div class="field-group" style="--delay: 0.16s">
+                    <label class="field-label"><i class="bi bi-chat-text-fill"></i> Complaint Description</label>
+                    <textarea class="field-input field-textarea" name="description" rows="4"
+                              placeholder="Describe the issue in detail (location specifics, intensity, duration, etc.)" required></textarea>
+                </div>
+
+                <!-- Photo Upload -->
+                <div class="field-group" style="--delay: 0.2s">
+                    <label class="field-label"><i class="bi bi-camera-fill"></i> Photo Evidence</label>
+                    <div id="dropzone" onclick="document.getElementById('imgInput').click()">
+                        <div id="drop-placeholder">
+                            <div class="drop-icon">📸</div>
+                            <div class="drop-title">Click or Drag Photo Here</div>
+                            <div class="drop-hint">JPG, PNG, WEBP up to 5MB</div>
+                        </div>
+                        <img id="img-preview" src="" alt="Preview">
+                    </div>
+                    <input type="file" name="image" id="imgInput" accept="image/*" capture="camera" style="display:none" onchange="previewImage(event)">
+                </div>
+
+                <!-- Location -->
+                <div class="field-group" style="--delay: 0.24s">
+                    <label class="field-label"><i class="bi bi-geo-alt-fill"></i> Incident Location</label>
+                    <input type="hidden" name="latitude"  id="lat-input">
+                    <input type="hidden" name="longitude" id="lng-input">
+
+                    <div class="address-wrapper">
+                        <span class="address-icon"><i class="bi bi-map"></i></span>
+                        <input class="field-input address-input" name="address" id="address-input"
+                               placeholder="Enter address or landmark manually...">
+                    </div>
+
+                    <button type="button" onclick="getLocation()" id="gps-btn" class="gps-btn">
+                        <i class="bi bi-crosshair2"></i> Auto-Detect My Location (GPS)
+                    </button>
+                    <div id="gps-status" class="gps-status"></div>
+                </div>
+
+                <!-- Submit -->
+                <div class="field-group" style="--delay: 0.28s; margin-top: 8px;">
+                    <button type="submit" class="btn-submit">
+                        <i class="bi bi-send-fill"></i>
+                        FILE OFFICIAL COMPLAINT
+                    </button>
+                </div>
+
+            </form>
+        </div>
     </div>
 </div>
 
-<div class="form-card animate-delay-1">
-    <form method="post">
-        <div class="mb-4">
-            <label class="form-label"><i class="bi bi-person"></i> &nbsp;Full Name</label>
-            <input class="form-control" name="name" placeholder="Enter your full name" required>
-        </div>
-        <div class="mb-4">
-            <label class="form-label"><i class="bi bi-tag"></i> &nbsp;Complaint Category</label>
-            <select class="form-select" name="category" required>
-                <option value="" disabled selected>Select a category</option>
-                <option value="Garbage">🗑️ Garbage Collection</option>
-                <option value="Road Damage">🚧 Road Damage</option>
-                <option value="Streetlight">💡 Streetlight Issue</option>
-                <option value="Water Supply">💧 Water Supply</option>
-                <option value="Drainage">🌊 Drainage Problem</option>
-                <option value="Mosquito">🦟 Mosquito Menace</option>
-                <option value="Construction">🏗️ Illegal Construction</option>
-                <option value="Encroachment">🏪 Footpath Encroachment </option>
-                <option value="Hoardings">🖼️ Unauthorized Hoardings</option>
-                <option value="Buildings">🏚️ Dangerous Buildings</option>
-                <option value="Tree Cutting">🪓 Illegal Tree Cutting</option>
-                <option value="Garden">🎡 Garden Maintenance</option>
-                <option value="air Pollution">💨 Air Pollution</option>
-                <option value="Dead Animal">🐕 Dead Animal Removal</option>
-                <option value="Toilet">🚻 Public Toilet Issues</option>
-                <option value="Food Safety">🍲 Food Safety</option>
-                <option value="Stray Cattle">🐄 Stray Cattle</option>
-                <option value="Noise Pollution">📢 Noise Pollution</option>
-                <option value="Manhole">🕳️ Missing Manhole Covers</option>
-                <option value="Dog">🐕‍🦺 Stray Dog Menace</option>
-                <option value="Tax">💳 Property Tax Issues</option>
-                <option value="Fire">🔥 Fire Safety</option>
-                <option value="other">Other</option>
-                <option value=""></option>
-                
-            </select>
-        </div>
-        <div class="mb-4">
-            <label class="form-label"><i class="bi bi-flag"></i> &nbsp;Priority Level</label>
-            <div class="d-flex gap-3">
-                <label class="priority-option">
-                    <input type="radio" name="priority" value="Low" required>
-                    <span class="priority-btn low">🟢 Low</span>
-                </label>
-                <label class="priority-option">
-                    <input type="radio" name="priority" value="Medium">
-                    <span class="priority-btn medium">🟡 Medium</span>
-                </label>
-                <label class="priority-option">
-                    <input type="radio" name="priority" value="High">
-                    <span class="priority-btn high">🔴 High</span>
-                </label>
-            </div>
-        </div>
-        <div class="mb-4">
-            <label class="form-label"><i class="bi bi-chat-text"></i> &nbsp;Complaint Description</label>
-            <textarea class="form-control" name="description" rows="4" placeholder="Describe the issue in detail..." required></textarea>
-        </div>
-        <button type="submit" class="btn-submit">
-            <i class="bi bi-send"></i> Submit Complaint
-        </button>
-    </form>
-</div>
-
 <style>
-    .priority-option input { display: none; }
-    .priority-btn {
-        display: inline-block;
-        padding: 8px 20px;
+/* ===== ROOT ===== */
+:root {
+    --green-deep:   #0f3d26;
+    --green-dark:   #1a5c38;
+    --green-mid:    #2d8653;
+    --green-light:  #4caf80;
+    --green-faint:  #eaf4ee;
+    --green-glow:   rgba(45, 134, 83, 0.15);
+    --gold:         #f5c518;
+    --text-main:    #0f2d1c;
+    --text-muted:   #5a7a65;
+    --border:       #d4e8da;
+    --white:        #ffffff;
+    --card-shadow:  0 8px 40px rgba(15, 61, 38, 0.10);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--green-faint); }
+
+/* ===== LAYOUT ===== */
+.complaint-page { display: flex; min-height: 100vh; }
+
+/* ===== LEFT PANEL ===== */
+.complaint-left {
+    position: relative;
+    width: 320px;
+    flex-shrink: 0;
+    background: linear-gradient(160deg, var(--green-deep) 0%, var(--green-dark) 55%, var(--green-mid) 100%);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 50px 36px;
+}
+.left-pattern {
+    position: absolute; inset: 0;
+    background-image:
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.04) 1px, transparent 1px),
+        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 30px 30px;
+}
+.left-circle { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.04); }
+.left-circle.c1 { width: 260px; height: 260px; bottom: -70px; right: -70px; }
+.left-circle.c2 { width: 140px; height: 140px; top: -40px; right: 20px; }
+.left-content { position: relative; z-index: 2; }
+
+.brand-badge {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 50px; padding: 7px 16px;
+    width: fit-content; margin-bottom: 32px;
+}
+.badge-icon { font-size: 1rem; }
+.badge-text { color: rgba(255,255,255,0.9); font-size: 0.82rem; font-weight: 600; font-family: 'Sora', sans-serif; letter-spacing: 0.5px; }
+
+.left-headline {
+    font-family: 'Sora', sans-serif;
+    font-size: 2.4rem; font-weight: 800;
+    color: #fff; line-height: 1.15;
+    margin-bottom: 18px; letter-spacing: -0.5px;
+}
+.left-sub { color: rgba(255,255,255,0.65); font-size: 0.86rem; line-height: 1.7; margin-bottom: 28px; }
+.left-pills { display: flex; flex-direction: column; gap: 10px; }
+.pill {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.85);
+    border-radius: 6px; padding: 8px 14px;
+    font-size: 0.78rem; font-weight: 600; letter-spacing: 0.3px; width: fit-content;
+}
+
+/* ===== RIGHT PANEL ===== */
+.complaint-right {
+    flex: 1; overflow-y: auto;
+    padding: 44px 48px;
+    background: var(--green-faint);
+    display: flex; flex-direction: column; gap: 24px;
+}
+
+/* ===== HEADING ===== */
+.heading-row { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.heading-icon { font-size: 1.9rem; line-height: 1; }
+.heading-title {
+    font-family: 'Sora', sans-serif; font-size: 1.85rem;
+    font-weight: 800; color: var(--green-deep); letter-spacing: -0.3px;
+}
+.heading-sub { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 16px; padding-left: 2px; }
+.heading-bar { height: 4px; width: 56px; background: var(--gold); border-radius: 20px; }
+
+/* ===== SUCCESS CARD ===== */
+.success-card {
+    display: flex; align-items: flex-start; gap: 16px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-left: 5px solid #22c55e;
+    border-radius: 16px; padding: 20px 24px;
+    max-width: 700px;
+    animation: riseIn 0.4s ease-out both;
+}
+.success-icon { font-size: 2rem; line-height: 1; }
+.success-title { font-family: 'Sora', sans-serif; font-weight: 700; color: #166534; font-size: 1rem; margin-bottom: 4px; }
+.success-sub { font-size: 0.82rem; color: #4b7a57; margin-bottom: 12px; }
+.cid-box {
+    display: flex; align-items: center; gap: 12px;
+    background: #fff; border: 1px solid #bbf7d0;
+    border-radius: 10px; padding: 10px 16px;
+    width: fit-content;
+}
+.cid-code { font-size: 1.1rem; font-weight: 700; color: #1a5c38; letter-spacing: 2px; font-family: monospace; }
+.cid-copy-btn {
+    background: none; border: 1px solid #bbf7d0;
+    border-radius: 7px; padding: 5px 12px;
+    font-size: 0.78rem; color: #166534;
+    cursor: pointer; font-weight: 600;
+    transition: background 0.2s;
+}
+.cid-copy-btn:hover { background: #dcfce7; }
+
+/* ===== FORM CARD ===== */
+.form-card {
+    background: var(--white);
+    border-radius: 20px; border: 1px solid var(--border);
+    padding: 36px 38px;
+    box-shadow: var(--card-shadow);
+    max-width: 700px;
+}
+
+/* ===== FIELDS ===== */
+.field-group {
+    margin-bottom: 20px;
+    animation: riseIn 0.45s ease-out both;
+    animation-delay: var(--delay, 0s);
+}
+.field-label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.8rem; font-weight: 700;
+    color: var(--green-dark); text-transform: uppercase;
+    letter-spacing: 0.5px; margin-bottom: 8px;
+    font-family: 'Sora', sans-serif;
+}
+.field-input {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 13px 16px;
+    font-size: 0.92rem; color: var(--text-main);
+    background: #f8fbf9;
+    font-family: 'DM Sans', sans-serif;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    outline: none; appearance: none; -webkit-appearance: none;
+}
+.field-input::placeholder { color: #a0b8a8; }
+.field-input:focus {
+    border-color: var(--green-mid); background: #fff;
+    box-shadow: 0 0 0 4px var(--green-glow);
+}
+.field-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232d8653' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 16px center;
+    padding-right: 40px; cursor: pointer;
+}
+.field-textarea { resize: vertical; min-height: 110px; }
+
+/* ===== DROPZONE ===== */
+#dropzone {
+    border: 2px dashed var(--border);
+    border-radius: 14px; padding: 30px 20px;
+    text-align: center; cursor: pointer;
+    background: #f8fbf9;
+    transition: all 0.25s ease;
+}
+#dropzone:hover { border-color: var(--green-mid); background: #f0f8f3; }
+.drop-icon { font-size: 2.4rem; margin-bottom: 10px; }
+.drop-title { font-weight: 700; color: var(--text-main); font-size: 0.92rem; font-family: 'Sora', sans-serif; }
+.drop-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 5px; }
+#img-preview {
+    display: none; max-height: 200px; border-radius: 10px;
+    margin: 10px auto 0; border: 3px solid var(--border);
+}
+
+/* ===== ADDRESS ===== */
+.address-wrapper {
+    position: relative; margin-bottom: 10px;
+}
+.address-icon {
+    position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted); font-size: 0.95rem; pointer-events: none;
+}
+.address-input { padding-left: 40px !important; }
+
+/* ===== GPS BUTTON ===== */
+.gps-btn {
+    width: 100%; background: var(--green-faint);
+    color: var(--green-dark); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 13px 16px;
+    font-family: 'Sora', sans-serif; font-size: 0.85rem;
+    font-weight: 700; cursor: pointer; letter-spacing: 0.3px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.25s ease;
+}
+.gps-btn:hover { background: #dcf5e7; border-color: var(--green-mid); color: var(--green-deep); }
+.gps-status { text-align: center; margin-top: 8px; font-size: 0.78rem; color: var(--text-muted); min-height: 18px; }
+
+/* ===== SUBMIT ===== */
+.btn-submit {
+    width: 100%;
+    background: linear-gradient(135deg, var(--green-mid) 0%, var(--green-dark) 100%);
+    color: #fff; border: none; border-radius: 12px;
+    padding: 15px 20px;
+    font-family: 'Sora', sans-serif; font-size: 0.88rem;
+    font-weight: 700; letter-spacing: 0.8px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 18px rgba(26, 92, 56, 0.3);
+}
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(26, 92, 56, 0.38);
+    background: linear-gradient(135deg, var(--green-light) 0%, var(--green-mid) 100%);
+}
+.btn-submit:active { transform: translateY(0); }
+
+/* ===== ANIMATION ===== */
+@keyframes riseIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes rotate { 100% { transform: rotate(360deg); } }
+.spin { animation: rotate 1.5s linear infinite; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+    .complaint-left { display: none; }
+    .complaint-right { padding: 28px 20px; }
+    .form-card { padding: 24px 18px; }
+}
+
+    .cid-track-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 14px;
+        background: var(--green-mid);
+        color: #fff !important;
+        padding: 9px 18px;
         border-radius: 8px;
-        border: 2px solid #d0e8da;
-        cursor: pointer;
-        font-size: 0.88rem;
-        font-weight: 600;
-        transition: all 0.2s;
-        background: white;
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-decoration: none;
+        font-family: 'Sora', sans-serif;
+        transition: background 0.2s;
     }
-    .priority-option input:checked + .priority-btn.low { border-color: #16a34a; background: #dcfce7; color: #166534; }
-    .priority-option input:checked + .priority-btn.medium { border-color: #ca8a04; background: #fef9c3; color: #854d0e; }
-    .priority-option input:checked + .priority-btn.high { border-color: #dc2626; background: #fee2e2; color: #991b1b; }
-    .priority-btn:hover { border-color: var(--green-light); }
+    .cid-track-btn:hover { background: var(--green-dark); }
+
 </style>
 
+<script>
+function copyCid() {
+    const cidText = document.getElementById("cmpId").innerText;
+    navigator.clipboard.writeText(cidText);
+    const btn = event.target.closest('button');
+    btn.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
+    btn.style.background = '#dcfce7';
+    setTimeout(() => { btn.innerHTML = '<i class="bi bi-clipboard"></i> Copy'; btn.style.background = ''; }, 2000);
+}
+
+function previewImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById("drop-placeholder").style.display = "none";
+        const preview = document.getElementById("img-preview");
+        preview.src = e.target.result;
+        preview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+}
+
+function getLocation() {
+    const btn = document.getElementById("gps-btn");
+    const status = document.getElementById("gps-status");
+    if (!navigator.geolocation) {
+        status.innerHTML = '⚠ Browser does not support GPS.';
+        return;
+    }
+    btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Detecting Location...';
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            const lat = pos.coords.latitude.toFixed(6);
+            const lng = pos.coords.longitude.toFixed(6);
+            document.getElementById("lat-input").value = lat;
+            document.getElementById("lng-input").value = lng;
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                .then(r => r.json())
+                .then(data => {
+                    const addr = data.display_name || `${lat}, ${lng}`;
+                    document.getElementById("address-input").value = addr;
+                    status.innerHTML = `✅ Location set: ${addr.substring(0, 50)}...`;
+                });
+            btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Location Captured';
+            btn.style.background = '#dcfce7';
+            btn.style.color = '#166534';
+            btn.style.borderColor = '#86efac';
+        },
+        (err) => {
+            status.innerHTML = `⚠ GPS Error: ${err.message}`;
+            btn.innerHTML = '<i class="bi bi-crosshair2"></i> Retry GPS';
+        }
+    );
+}
+</script>
 {% endblock %}

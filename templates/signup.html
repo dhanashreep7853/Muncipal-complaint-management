@@ -1,111 +1,467 @@
 {% extends "base.html" %}
-{% block content %}
 
-<!-- HEADER -->
+{% block content %}
 <meta http-equiv="Cache-Control" content="no-store" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
 
-<div class="page-header animate">
-    <div class="header-icon">🔐</div>
-    <div>
-        <h2>Create Account</h2>
-        <p style="color: var(--text-muted); font-size:0.88rem; margin:0;">
-            Register as a citizen or authorized admin
-        </p>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+
+<div class="signup-page">
+
+    <!-- LEFT DECORATIVE PANEL -->
+    <div class="signup-left">
+        <div class="left-pattern"></div>
+        <div class="left-content">
+            <div class="brand-badge">
+                <span class="badge-icon">🛡️</span>
+                <span class="badge-text">GovPortal</span>
+            </div>
+            <h1 class="left-headline">Secure.<br>Trusted.<br>Official.</h1>
+            <p class="left-sub">Create your verified citizen account to access government services, submit applications, and track their status — all in one place.</p>
+            <div class="left-pills">
+                <span class="pill">✔ End-to-end encrypted</span>
+                <span class="pill">✔ OTP verified access</span>
+                <span class="pill">✔ Role-based security</span>
+            </div>
+        </div>
+        <div class="left-circle c1"></div>
+        <div class="left-circle c2"></div>
+    </div>
+
+    <!-- RIGHT FORM PANEL -->
+    <div class="signup-right">
+
+        <!-- PAGE HEADING -->
+        <div class="form-heading">
+            <div class="heading-row">
+                <span class="heading-icon">🛡️</span>
+                <h2 class="heading-title">Create Account</h2>
+            </div>
+            <p class="heading-sub">Register as a citizen or authorized state admin to access the portal</p>
+            <div class="heading-bar"></div>
+        </div>
+
+        <!-- FORM CARD -->
+        <div class="form-card">
+
+            {% if error %}
+            <div class="error-box">
+                <i class="bi bi-exclamation-triangle-fill"></i> {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="post" id="signupForm" autocomplete="off">
+                <input type="text" name="fakeuser" style="display:none">
+                <input type="password" name="fakepass" style="display:none">
+
+                <!-- Full Name -->
+                <div class="field-group" style="--delay: 0.05s">
+                    <label class="field-label">
+                        <i class="bi bi-person-fill"></i> Full Name
+                    </label>
+                    <input name="name" class="field-input" placeholder="Enter your official full name" required>
+                </div>
+
+                <!-- Email -->
+                <div class="field-group" style="--delay: 0.1s">
+                    <label class="field-label">
+                        <i class="bi bi-envelope-at-fill"></i> Email Address
+                    </label>
+                    <input name="email" type="email" class="field-input" placeholder="name@example.com" required>
+                </div>
+
+                <!-- Password -->
+                <div class="field-group" style="--delay: 0.15s">
+                    <label class="field-label">
+                        <i class="bi bi-shield-lock-fill"></i> Set Password
+                    </label>
+                    <input name="password" type="password" class="field-input" placeholder="••••••••••••" required>
+                </div>
+
+                <!-- State -->
+                <div class="field-group" style="--delay: 0.2s">
+                    <label class="field-label">
+                        <i class="bi bi-geo-alt-fill"></i> State / UT
+                    </label>
+                    <select name="state" class="field-input field-select" required>
+                        <option value="" disabled selected>Select your state or UT</option>
+                        {% for s in states %}
+                        <option value="{{ s }}">{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Role -->
+                <div class="field-group" style="--delay: 0.25s">
+                    <label class="field-label">
+                        <i class="bi bi-person-badge-fill"></i> Select Role
+                    </label>
+                    <select name="role" id="roleSelect" class="field-input field-select" onchange="toggleAdminField()" required>
+                        <option value="user">👤 Citizen (User)</option>
+                        <option value="admin">🛡️ Municipal Admin</option>
+                    </select>
+                </div>
+
+                <!-- Admin Code -->
+                <div class="field-group admin-section" id="adminCodeSection" style="display:none; --delay: 0.28s">
+                    <div class="admin-auth-box">
+                        <label class="field-label admin-label">
+                            <i class="bi bi-key-fill"></i> Admin Authorization Code
+                        </label>
+                        <input name="admin_code" id="admin_secret" class="field-input admin-input"
+                               placeholder="e.g., MH@ADMIN2026">
+                        <p class="admin-hint">Required for administrative access. Code issued by your district nodal officer.</p>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="field-group" style="--delay: 0.3s; margin-top: 8px;">
+                    <button type="submit" class="btn-submit">
+                        <i class="bi bi-person-plus-fill"></i>
+                        CREATE ACCOUNT & SEND OTP
+                    </button>
+                </div>
+
+                <div class="login-footer">
+                    <span>Already registered?</span>
+                    <a href="/login" class="login-link">Login to Portal <i class="bi bi-arrow-right-short"></i></a>
+                </div>
+
+            </form>
+        </div>
     </div>
 </div>
 
-<!-- FORM -->
-<div class="form-card animate-delay-1">
-    <form method="post" autocomplete="off">
-
-        <!-- Hidden fake fields to block autofill -->
-        <input type="text" name="fakeuser" style="display:none">
-        <input type="password" name="fakepass" style="display:none">
-
-        <!-- NAME -->
-        <div class="mb-4">
-            <label class="form-label"><i class="bi bi-person"></i> &nbsp;Full Name</label>
-            <input name="name" class="form-control" placeholder="Enter your full name" autocomplete="off" required>
-        </div>
-
-        <!-- EMAIL -->
-        <div class="mb-4">
-            <label class="form-label"><i class="bi bi-envelope"></i> &nbsp;Email Address</label>
-            <input name="email" type="email" class="form-control" placeholder="Enter your email" autocomplete="off" required>
-        </div>
-
-        <!-- PASSWORD -->
-        <div class="mb-4">
-            <label class="form-label"><i class="bi bi-lock"></i> &nbsp;Password</label>
-            <input name="password" type="password" class="form-control" placeholder="Create a strong password" autocomplete="new-password" required>
-        </div>
-
-        <!-- ROLE -->
-        <div class="mb-4">
-            <label class="form-label"><i class="bi bi-person-badge"></i> &nbsp;Select Role</label>
-            <select name="role" id="role" class="form-select" onchange="toggleAdmin()" required>
-                <option value="" disabled selected>Select role</option>
-                <option value="user">👤 User</option>
-                <option value="admin">🛡️ Admin</option>
-            </select>
-        </div>
-
-        <!-- ADMIN CODE -->
-        <div class="mb-4" id="adminCodeWrap" style="display:none;">
-            <label class="form-label"><i class="bi bi-shield-lock"></i> &nbsp;Admin Secret Code</label>
-            <input name="admin_code" id="admin_code" class="form-control" placeholder="Enter admin authorization code" autocomplete="off">
-        </div>
-
-        <!-- BUTTON -->
-        <button type="submit" class="btn-submit">
-            <i class="bi bi-person-plus"></i> Create Account
-        </button>
-
-    </form>
-</div>
-
-<!-- STYLING -->
 <style>
-    #adminCodeWrap {
-        transition: all 0.3s ease;
-    }
+/* ===== FONTS & ROOT ===== */
+:root {
+    --green-deep:   #0f3d26;
+    --green-dark:   #1a5c38;
+    --green-mid:    #2d8653;
+    --green-light:  #4caf80;
+    --green-faint:  #eaf4ee;
+    --green-glow:   rgba(45, 134, 83, 0.15);
+    --gold:         #f5c518;
+    --gold-soft:    #fff9e6;
+    --text-main:    #0f2d1c;
+    --text-muted:   #5a7a65;
+    --border:       #d4e8da;
+    --white:        #ffffff;
+    --card-shadow:  0 8px 40px rgba(15, 61, 38, 0.10);
+}
 
-    .form-control:focus, .form-select:focus {
-        transform: scale(1.01);
-    }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .btn-submit {
-        margin-top: 10px;
-    }
+body { font-family: 'DM Sans', sans-serif; background: var(--green-faint); }
+
+/* ===== PAGE LAYOUT ===== */
+.signup-page {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ===== LEFT DECORATIVE PANEL ===== */
+.signup-left {
+    position: relative;
+    width: 360px;
+    flex-shrink: 0;
+    background: linear-gradient(160deg, var(--green-deep) 0%, var(--green-dark) 55%, var(--green-mid) 100%);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 50px 40px;
+}
+
+.left-pattern {
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.04) 1px, transparent 1px),
+        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 30px 30px;
+}
+
+.left-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+}
+.left-circle.c1 { width: 280px; height: 280px; bottom: -80px; right: -80px; }
+.left-circle.c2 { width: 160px; height: 160px; top: -40px; right: 30px; }
+
+.left-content { position: relative; z-index: 2; }
+
+.brand-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 50px;
+    padding: 7px 16px;
+    width: fit-content;
+    margin-bottom: 36px;
+}
+.badge-icon { font-size: 1rem; }
+.badge-text { color: rgba(255,255,255,0.9); font-size: 0.82rem; font-weight: 600; font-family: 'Sora', sans-serif; letter-spacing: 0.5px; }
+
+.left-headline {
+    font-family: 'Sora', sans-serif;
+    font-size: 2.6rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.15;
+    margin-bottom: 20px;
+    letter-spacing: -0.5px;
+}
+
+.left-sub {
+    color: rgba(255,255,255,0.65);
+    font-size: 0.88rem;
+    line-height: 1.7;
+    margin-bottom: 30px;
+}
+
+.left-pills { display: flex; flex-direction: column; gap: 10px; }
+.pill {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.85);
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    width: fit-content;
+}
+
+/* ===== RIGHT FORM PANEL ===== */
+.signup-right {
+    flex: 1;
+    overflow-y: auto;
+    padding: 48px 52px;
+    background: var(--green-faint);
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+/* ===== HEADING SECTION ===== */
+.heading-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+.heading-icon { font-size: 1.9rem; line-height: 1; }
+.heading-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: var(--green-deep);
+    letter-spacing: -0.3px;
+}
+.heading-sub {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    margin-bottom: 16px;
+    padding-left: 2px;
+}
+.heading-bar {
+    height: 4px;
+    width: 56px;
+    background: var(--gold);
+    border-radius: 20px;
+}
+
+/* ===== FORM CARD ===== */
+.form-card {
+    background: var(--white);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    padding: 38px 40px;
+    box-shadow: var(--card-shadow);
+    max-width: 620px;
+}
+
+/* ===== ERROR BOX ===== */
+.error-box {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    border-left: 4px solid #ef4444;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 0.83rem;
+    margin-bottom: 24px;
+}
+
+/* ===== FIELD GROUPS ===== */
+.field-group {
+    margin-bottom: 20px;
+    animation: riseIn 0.45s ease-out both;
+    animation-delay: var(--delay, 0s);
+}
+
+.field-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--green-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    font-family: 'Sora', sans-serif;
+}
+
+.field-input {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 13px 16px;
+    font-size: 0.92rem;
+    color: var(--text-main);
+    background: #f8fbf9;
+    font-family: 'DM Sans', sans-serif;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.field-input::placeholder { color: #a0b8a8; }
+
+.field-input:focus {
+    border-color: var(--green-mid);
+    background: #fff;
+    box-shadow: 0 0 0 4px var(--green-glow);
+}
+
+.field-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232d8653' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 40px;
+    cursor: pointer;
+}
+
+/* ===== ADMIN BOX ===== */
+.admin-auth-box {
+    background: var(--gold-soft);
+    border: 1.5px solid #f0d060;
+    border-left: 5px solid var(--gold);
+    border-radius: 12px;
+    padding: 18px 20px;
+}
+.admin-label { color: #7a5c00 !important; }
+.admin-input {
+    background: #fff !important;
+    border-color: #e8c840 !important;
+}
+.admin-input:focus {
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 0 4px rgba(245, 197, 24, 0.12) !important;
+}
+.admin-hint {
+    margin-top: 8px;
+    font-size: 0.72rem;
+    color: #9a7a20;
+    line-height: 1.5;
+}
+
+/* ===== SUBMIT BUTTON ===== */
+.btn-submit {
+    width: 100%;
+    background: linear-gradient(135deg, var(--green-mid) 0%, var(--green-dark) 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 15px 20px;
+    font-family: 'Sora', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 18px rgba(26, 92, 56, 0.3);
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(26, 92, 56, 0.38);
+    background: linear-gradient(135deg, var(--green-light) 0%, var(--green-mid) 100%);
+}
+
+.btn-submit:active { transform: translateY(0); }
+
+/* ===== LOGIN FOOTER ===== */
+.login-footer {
+    text-align: center;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+.login-link {
+    color: var(--green-mid);
+    font-weight: 700;
+    text-decoration: none;
+    margin-left: 4px;
+    font-family: 'Sora', sans-serif;
+}
+.login-link:hover { color: var(--green-dark); text-decoration: underline; }
+
+/* ===== ANIMATIONS ===== */
+@keyframes riseIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+    .signup-left { display: none; }
+    .signup-right { padding: 32px 24px; }
+    .form-card { padding: 28px 22px; }
+}
 </style>
 
-<!-- SCRIPT -->
 <script>
-window.onload = function() {
-    const form = document.querySelector("form");
-
-    // Force reset
-    form.reset();
-
-    // Clear all inputs manually (important)
-    document.querySelectorAll("input").forEach(input => input.value = "");
-
-    // Hide admin field again
-    document.getElementById("adminCodeWrap").style.display = "none";
-}
-
-function toggleAdmin() {
-    let role = document.getElementById("role").value;
-    let wrap = document.getElementById("adminCodeWrap");
+function toggleAdminField() {
+    const role = document.getElementById("roleSelect").value;
+    const adminSection = document.getElementById("adminCodeSection");
+    const adminInput = document.getElementById("admin_secret");
 
     if (role === "admin") {
-        wrap.style.display = "block";
+        adminSection.style.display = "block";
+        adminInput.setAttribute("required", "required");
     } else {
-        wrap.style.display = "none";
+        adminSection.style.display = "none";
+        adminInput.removeAttribute("required");
+        adminInput.value = "";
     }
 }
+
+window.onload = function () {
+    const form = document.getElementById("signupForm");
+    if (form) {
+        form.reset();
+        document.querySelectorAll("input").forEach(i => i.value = "");
+        document.querySelectorAll("select").forEach(s => s.selectedIndex = 0);
+        toggleAdminField();
+    }
+};
+
+window.addEventListener('pageshow', function (event) {
+    if (event.persisted) window.location.reload();
+});
 </script>
 
 {% endblock %}

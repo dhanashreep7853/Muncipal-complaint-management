@@ -3,342 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Municipal Complaint System</title>
+    <title>{% block title %}Municipal Complaint System{% endblock %}</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    
     <style>
         :root {
-            --green-dark: #1a4731;
-            --green-mid: #2d6a4f;
-            --green-light: #40916c;
-            --green-pale: #d8f3dc;
+            --green-dark:   #1a4731;
+            --green-mid:    #2d6a4f;
+            --green-light:  #40916c;
+            --green-pale:   #d8f3dc;
             --green-accent: #52b788;
-            --white: #ffffff;
-            --off-white: #f8fdf9;
-            --text-dark: #1b2d24;
-            --text-muted: #5a7a68;
-            --gold: #c9a84c;
-            --shadow: 0 4px 24px rgba(26,71,49,0.10);
-            --shadow-lg: 0 8px 40px rgba(26,71,49,0.16);
+            --white:        #ffffff;
+            --off-white:    #f8fdf9;
+            --text-dark:    #1b2d24;
+            --text-muted:   #5a7a68;
+            --gold:         #c9a84c;
+            --gold-light:   #f4e9c1;
+            --shadow:       0 4px 24px rgba(26,71,49,0.10);
+            --shadow-lg:    0 8px 40px rgba(26,71,49,0.16);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        * { margin:0; padding:0; box-sizing:border-box; }
+        
         body {
             font-family: 'DM Sans', sans-serif;
             background: var(--off-white);
             color: var(--text-dark);
-            /* min-height: 100vh; */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
+
+        /* ── NAVBAR ── */
         .navbar {
             background: var(--green-dark) !important;
             padding: 0 2rem;
-            height: 68px;
+            height: 70px;
             box-shadow: 0 2px 20px rgba(0,0,0,0.18);
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
             border-bottom: 3px solid var(--gold);
         }
         .navbar-brand {
             font-family: 'Playfair Display', serif;
             font-size: 1.25rem;
             color: var(--white) !important;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            letter-spacing: 0.3px;
+            display: flex; align-items: center; gap: 10px;
         }
         .navbar-brand .emblem {
-            width: 38px;
-            height: 38px;
+            width: 38px; height: 38px;
             background: var(--gold);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             font-size: 1.2rem;
-            flex-shrink: 0;
-        }
-        .nav-links { display: flex; gap: 4px; align-items: center; }
-        .nav-links a {
-            color: rgba(255,255,255,0.80) !important;
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 0.88rem;
-            font-weight: 500;
-            letter-spacing: 0.3px;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .nav-links a:hover, .nav-links a.active {
-            background: var(--green-light);
-            color: var(--white) !important;
-        }
-        .main-content {
-            padding: 2rem 1.5rem;
-            max-width: 1200px;
-            margin: auto;
-        }
-        /* ADMIN PAGE FULL WIDTH */
-        .admin-page .main-content {
-            max-width: 100%;
-        }
-        .page-header {
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid var(--green-pale);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .page-header h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.9rem;
-            color: var(--green-dark);
-            margin: 0;
-        }
-        .page-header .header-icon {
-            width: 44px;
-            height: 44px;
-            background: var(--green-pale);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-            color: var(--green-mid);
-        }
-        .stat-card {
-            background: var(--white);
-            border-radius: 16px;
-            padding: 1.8rem;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(64,145,108,0.12);
-            transition: transform 0.3s, box-shadow 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 4px;
-            background: var(--green-light);
-        }
-        .stat-card.pending::before { background: #e9c46a; }
-        .stat-card.resolved::before { background: var(--green-accent); }
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-        }
-        .stat-card .icon-wrap {
-            width: 52px;
-            height: 52px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-        .stat-card.total .icon-wrap { background: #e8f5e9; color: var(--green-mid); }
-        .stat-card.pending .icon-wrap { background: #fef9e7; color: #b7860b; }
-        .stat-card.resolved .icon-wrap { background: #d8f3dc; color: var(--green-light); }
-        .stat-card h6 {
-            font-size: 0.78rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            margin-bottom: 0.4rem;
-        }
-        .stat-card .stat-number {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.8rem;
-            font-weight: 700;
-            color: var(--green-dark);
-            line-height: 1;
-        }
-        .form-card {
-            background: var(--white);
-            border-radius: 16px;
-            padding: 2.5rem;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(64,145,108,0.12);
-            max-width: 640px;
-        }
-        .form-label {
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: var(--green-dark);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-        }
-        .form-control, .form-select {
-            border: 1.5px solid #d0e8da;
-            border-radius: 8px;
-            padding: 10px 14px;
-            font-size: 0.93rem;
-            color: var(--text-dark);
-            background: #fafffe;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .form-control:focus, .form-select:focus {
-            border-color: var(--green-light);
-            box-shadow: 0 0 0 3px rgba(64,145,108,0.15);
-            outline: none;
-            background: var(--white);
-        }
-        .btn-submit {
-            background: var(--green-mid);
-            color: var(--white);
-            border: none;
-            padding: 12px 32px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            letter-spacing: 0.3px;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-submit:hover {
-            background: var(--green-dark);
-            color: var(--white);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 16px rgba(26,71,49,0.25);
-        }
-        .admin-table {
-            background: var(--white);
-            border-radius: 16px;
-            overflow-x: auto;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(64,145,108,0.12);
-        }
-        .admin-table table { 
-            margin: 0; 
-            width: 100%; 
-            min-width: 1400px; 
-        }
-        .admin-table thead th {
-            background: var(--green-dark);
-            color: var(--white);
-            font-size: 0.78rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 14px 16px;
-            border: none;
-            text-align: center;
-        }
-        .admin-table tbody td {
-            padding: 13px 16px;
-            font-size: 0.9rem;
-            border-bottom: 1px solid #edf7f0;
-            vertical-align: middle;
-        }
-        .admin-table td {
-            white-space: nowrap;
         }
 
-        /* ACTION COLUMN FIX */
-        .admin-table td:last-child {
-            min-width: 160px;
-        }
-        .admin-table tbody tr:last-child td { border-bottom: none; }
-        .admin-table tbody tr:hover { background: #f4fbf6; }
-        .admin-table tbody tr.high-row { background: #fff5f5; }
-        .admin-table tbody tr.medium-row { background: #fffbf0; }
-        .badge-high { background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-        .badge-medium { background: #fef9c3; color: #854d0e; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-        .badge-low { background: #f0fdf4; color: #166534; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-        .status-pending { background: #fef3c7; color: #92400e; }
-        .status-progress { background: #dbeafe; color: #1e40af; }
-        .status-resolved { background: #dcfce7; color: #166534; }
-        .btn-action {
-            padding: 5px 12px;
-            border-radius: 6px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            border: none;
-            transition: all 0.2s;
+        /* Nav Link Styling */
+        .nav-links a {
+            color: rgba(255,255,255,0.85) !important;
             text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.88rem; font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex; align-items: center; gap: 8px;
         }
-        .btn-progress { background: #dbeafe; color: #1d4ed8; }
-        .btn-progress:hover { background: #1d4ed8; color: white; }
-        .btn-resolve { background: #dcfce7; color: #15803d; }
-        .btn-resolve:hover { background: #15803d; color: white; }
-        .track-result {
-            background: var(--white);
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: var(--shadow);
-            border-left: 5px solid var(--green-light);
-            margin-top: 1.5rem;
+        .nav-links a:hover { 
+            background: rgba(255,255,255,0.1); 
+            color: var(--white) !important; 
+            transform: translateY(-1px);
         }
+
+        /* Logout button specific styling */
+        .nav-logout {
+            color: #ffb3b3 !important;
+            border: 1px solid rgba(255, 179, 179, 0.3);
+            margin-left: 10px;
+        }
+        .nav-logout:hover {
+            background: rgba(255, 179, 179, 0.15) !important;
+            border-color: #ffb3b3;
+        }
+
+        /* ── CONTENT AREA ── */
+        .main-content {
+            flex: 1;
+            padding: 3rem 1.5rem;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* ── FOOTER ── */
         .footer {
             text-align: center;
             padding: 1.5rem;
+            background: var(--white);
             color: var(--text-muted);
             font-size: 0.82rem;
             border-top: 1px solid var(--green-pale);
-            margin-top: 3rem;
+            margin-top: auto;
         }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        /* Page Separator (Yellow Line) Utility */
+        .header-separator {
+            height: 3px;
+            background: var(--gold);
+            width: 90%; 
+            margin: 1rem auto 2.5rem auto; 
+            border-radius: 10px;
+            opacity: 0.8;
         }
-        .animate { animation: fadeInUp 0.5s ease forwards; }
-        .animate-delay-1 { animation-delay: 0.1s; opacity: 0; animation-fill-mode: forwards; animation-name: fadeInUp; animation-duration: 0.5s; }
-        .animate-delay-2 { animation-delay: 0.2s; opacity: 0; animation-fill-mode: forwards; animation-name: fadeInUp; animation-duration: 0.5s; }
-        .animate-delay-3 { animation-delay: 0.3s; opacity: 0; animation-fill-mode: forwards; animation-name: fadeInUp; animation-duration: 0.5s; }
     </style>
 </head>
-<body class="{% block body_class %}{% endblock %}">
-    <nav class="navbar navbar-expand-lg">
-        <a class="navbar-brand" href="/">
-            <div class="emblem">🏛️</div>
-            Municipal Complaint System
-        </a>
-        <div class="nav-links ms-auto">
-        {% if session.get('user') %}
-        <!-- Always visible -->
-        <a href="/"><i class="bi bi-speedometer2"></i> Dashboard</a>
-        <!-- Admin View -->
-        {% if session.get('role') == 'admin' %}
-            <a href="/admin"><i class="bi bi-shield-check"></i> Admin</a>
-        <!-- User View -->
-        {% else %}
-            <a href="/submit"><i class="bi bi-pencil-square"></i> Submit</a>
-            <a href="/track"><i class="bi bi-search"></i> Track</a>
-        {% endif %}
-        <!-- Logout -->
-        <a href="/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+<body>
 
-    {% else %}
-        <!-- Default (Not Logged In) -->
-        <a href="/"><i class="bi bi-speedometer2"></i> Dashboard</a>
-        <a href="/login"><i class="bi bi-box-arrow-in-right"></i> Login</a>
-        <a href="/signup"><i class="bi bi-person-plus"></i> Signup</a>
-    {% endif %}
-    </div>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/home">
+                <div class="emblem">🏛️</div>
+                <span>Municipal Complaint System</span>
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="bi bi-list text-white fs-2"></i>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="nav-links ms-auto">
+                    <a href="/home"><i class="bi bi-house"></i> Home</a>
+
+                    {% if session.get('role') == 'admin' %}
+                        <a href="/admin"><i class="bi bi-shield-lock"></i> Admin Panel</a>
+                        <a href="/logout" class="nav-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+
+                    {% elif session.get('role') == 'user' %}
+                        <a href="/submit"><i class="bi bi-pencil-square"></i> Complaint</a>
+                        <a href="/track"><i class="bi bi-search"></i> Track Status</a>
+                        <a href="/logout" class="nav-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+
+                    {% else %}
+                        <a href="/login"><i class="bi bi-box-arrow-in-right"></i> Login</a>
+                        <a href="/signup" style="background: var(--gold); color: var(--green-dark) !important; font-weight: 700;">
+                            <i class="bi bi-person-plus"></i> Signup
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </nav>
-    <div class="main-content">
+
+    <main class="main-content">
         {% block content %}{% endblock %}
-    </div>
-    <div class="footer">
-        © 2025 Municipal Complaint Management System &nbsp;|&nbsp; Serving Citizens with Integrity
-    </div>
+    </main>
+
+    <footer class="footer">
+        <div>© 2026 Municipal Complaint Management System</div>
+        <div class="small opacity-75">Serving Citizens with Transparency & Integrity</div>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    {% block scripts %}{% endblock %}
 </body>
 </html>
