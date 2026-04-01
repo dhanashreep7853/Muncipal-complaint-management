@@ -81,7 +81,7 @@
                 <!-- Category -->
                 <div class="field-group" style="--delay: 0.12s">
                     <label class="field-label"><i class="bi bi-tag-fill"></i> Complaint Category</label>
-                    <select class="field-input field-select" name="category" required>
+                    <select class="field-input field-select" name="category" id="categorySelect" required>
                         <option value="" disabled selected>Select a category</option>
                         <option value="Garbage">🗑️ Garbage Collection</option>
                         <option value="Road Damage">🚧 Road Damage</option>
@@ -112,7 +112,7 @@
                 <!-- Description -->
                 <div class="field-group" style="--delay: 0.16s">
                     <label class="field-label"><i class="bi bi-chat-text-fill"></i> Complaint Description</label>
-                    <textarea class="field-input field-textarea" name="description" rows="4"
+                    <textarea class="field-input field-textarea" name="description" id="descriptionText" rows="4"
                               placeholder="Describe the issue in detail (location specifics, intensity, duration, etc.)" required></textarea>
                 </div>
 
@@ -159,7 +159,83 @@
             </form>
         </div>
     </div>
-</div>
+
+    <!-- AI ASSISTANT BUTTON -->
+    <div id="ai-assistant-btn" onclick="toggleAIPanel()" title="AI Voice & Image Assistant">
+        <span class="ai-icon">🤖</span>
+        <small>AI Help</small>
+    </div>
+
+    <!-- AI ANALYSIS PANEL -->
+    <div id="ai-panel" class="ai-card">
+        <div class="ai-header">
+            <div class="ai-header-title">
+                <span class="dot-online"></span>
+                <h6>AI Complaint Assistant</h6>
+            </div>
+            <button onclick="toggleAIPanel()" class="btn-close-custom">✕</button>
+        </div>
+        
+        <div class="ai-body">
+            <!-- MODE SELECTOR -->
+            <div class="mode-selector">
+                <button type="button" class="mode-btn active" onclick="switchMode('voice')" id="voice-mode-btn">
+                    <i class="bi bi-mic-fill"></i> Voice
+                </button>
+                <button type="button" class="mode-btn" onclick="switchMode('image')" id="image-mode-btn">
+                    <i class="bi bi-image-fill"></i> Image
+                </button>
+            </div>
+
+            <!-- VOICE MODE -->
+            <div id="voice-section" class="ai-section active">
+                <p id="ai-status" class="ai-instruction">Click the mic and describe the issue in Marathi, Hindi, or English.</p>
+                <div class="mic-section">
+                    <button id="start-record" type="button" class="btn-mic">
+                        <i class="bi bi-mic-fill"></i>
+                        <div class="pulse-ring"></div>
+                    </button>
+                    <audio id="audio-preview" controls style="display:none; width:100%; margin-top:10px;"></audio>
+
+                    <button id="generate-audio-btn" style="display:none;" class="btn-apply">
+                        Generate Complaint
+                    </button>
+                </div>
+            </div>
+
+            <!-- IMAGE MODE -->
+            <div id="image-section" class="ai-section">
+                <p class="ai-instruction" id="image-status">Upload a photo of the issue for AI analysis.</p>
+                <div id="image-upload-zone" class="image-upload-zone" onclick="document.getElementById('aiImageInput').click()">
+                    <div class="upload-placeholder">
+                        <div class="upload-icon">📷</div>
+                        <div class="upload-title">Click or Drag Image Here</div>
+                        <div class="upload-hint">JPG, PNG, WEBP</div>
+                    </div>
+                    <img id="ai-image-preview" src="" alt="Preview" style="display:none; max-height: 200px; border-radius: 10px;">
+                </div>
+                <button id="generate-image-btn" style="display:none;" class="btn-apply">
+                    Generate Complaint
+                </button>
+                <input type="file" id="aiImageInput" accept="image/*" style="display:none" onchange="handleAIImageUpload(event)">
+            </div>
+
+            <!-- RESULTS -->
+            <div id="ai-result" style="display:none;" class="ai-result-view">
+                <div class="result-item">
+                    <label>Detected Category</label>
+                    <span id="detected-cat" class="ai-badge">-</span>
+                </div>
+                <div class="result-item">
+                    <label>English Summary</label>
+                    <p id="detected-desc" class="ai-desc-text">-</p>
+                </div>
+                <button type="button" onclick="autoFillForm()" class="btn-apply">
+                    <i class="bi bi-magic"></i> Apply to Official Form
+                </button>
+            </div>
+        </div>
+    </div>
 
 <style>
 /* ===== ROOT ===== */
@@ -399,79 +475,403 @@ body { font-family: 'DM Sans', sans-serif; background: var(--green-faint); }
     .form-card { padding: 24px 18px; }
 }
 
-    .cid-track-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        margin-top: 14px;
-        background: var(--green-mid);
-        color: #fff !important;
-        padding: 9px 18px;
-        border-radius: 8px;
-        font-size: 0.82rem;
-        font-weight: 700;
-        text-decoration: none;
-        font-family: 'Sora', sans-serif;
-        transition: background 0.2s;
-    }
-    .cid-track-btn:hover { background: var(--green-dark); }
+.cid-track-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 14px;
+    background: var(--green-mid);
+    color: #fff !important;
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-decoration: none;
+    font-family: 'Sora', sans-serif;
+    transition: background 0.2s;
+}
+.cid-track-btn:hover { background: var(--green-dark); }
+
+/* ===== AI ASSISTANT THEME ===== */
+#ai-assistant-btn {
+    position: fixed; bottom: 30px; right: 30px;
+    width: 75px; height: 75px; 
+    background: linear-gradient(135deg, var(--green-mid), var(--green-deep));
+    border-radius: 50%; color: white; display: flex;
+    flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 2000; box-shadow: 0 10px 25px rgba(15, 61, 38, 0.3);
+    border: 2px solid rgba(255,255,255,0.2); transition: all 0.3s ease;
+}
+#ai-assistant-btn:hover { transform: scale(1.05) rotate(5deg); }
+
+.ai-card {
+    position: fixed; bottom: 115px; right: 30px;
+    width: 320px; background: white; border-radius: 20px;
+    display: none; z-index: 2001; overflow: hidden;
+    box-shadow: var(--card-shadow); border: 1px solid var(--border);
+    animation: riseIn 0.3s ease-out;
+}
+
+.ai-header { 
+    background: var(--green-deep); color: white; padding: 15px 20px; 
+    display: flex; justify-content: space-between; align-items: center;
+}
+.ai-header-title { display: flex; align-items: center; gap: 8px; }
+.ai-header-title h6 { margin: 0; font-family: 'Sora', sans-serif; font-size: 0.9rem; font-weight: 700; }
+.dot-online { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 8px #22c55e; }
+.btn-close-custom { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; opacity: 0.7; }
+
+.ai-body { padding: 20px; text-align: center; }
+
+/* ===== MODE SELECTOR ===== */
+.mode-selector {
+    display: flex; gap: 8px; margin-bottom: 16px;
+}
+.mode-btn {
+    flex: 1; padding: 10px 12px; border: 1.5px solid var(--border);
+    background: white; border-radius: 8px; font-size: 0.75rem;
+    font-weight: 700; color: var(--text-muted); cursor: pointer;
+    transition: all 0.2s ease;
+}
+.mode-btn:hover { border-color: var(--green-mid); color: var(--green-mid); }
+.mode-btn.active {
+    background: var(--green-mid); color: white; border-color: var(--green-mid);
+}
+
+.ai-section { display: none; }
+.ai-section.active { display: block; }
+
+.ai-instruction { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px; }
+
+/* ===== VOICE SECTION ===== */
+.mic-section { position: relative; display: flex; flex-direction: column; align-items: center; margin-bottom: 16px; gap: 10px; }
+.btn-mic {
+    width: 70px; height: 70px; border-radius: 50%; border: none;
+    background: #ef4444; color: white; font-size: 1.8rem;
+    cursor: pointer; position: relative; z-index: 5; transition: 0.3s;
+}
+.btn-mic.recording { background: #b91c1c; }
+.pulse-ring {
+    position: absolute; width: 70px; height: 70px; border-radius: 50%;
+    background: rgba(239, 68, 68, 0.4); display: none;
+}
+.recording .pulse-ring { display: block; animation: pulse 1.5s infinite; }
+
+/* ===== IMAGE SECTION ===== */
+.image-upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px; padding: 25px 15px;
+    text-align: center; cursor: pointer;
+    background: #f8fbf9;
+    transition: all 0.25s ease;
+    margin-bottom: 16px;
+}
+.image-upload-zone:hover { border-color: var(--green-mid); background: #f0f8f3; }
+.upload-placeholder { display: flex; flex-direction: column; align-items: center; }
+.upload-icon { font-size: 2rem; margin-bottom: 8px; }
+.upload-title { font-weight: 700; color: var(--text-main); font-size: 0.85rem; margin-bottom: 4px; }
+.upload-hint { font-size: 0.7rem; color: var(--text-muted); }
+
+/* ===== RESULTS ===== */
+.ai-result-view { text-align: left; background: var(--green-faint); padding: 14px; border-radius: 10px; border: 1px solid var(--border); }
+.result-item { margin-bottom: 12px; }
+.result-item label { display: block; font-size: 0.6rem; font-weight: 800; color: var(--green-dark); text-transform: uppercase; margin-bottom: 4px; }
+.ai-badge { display: inline-block; background: var(--green-mid); color: white; padding: 4px 10px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; }
+.ai-desc-text { font-size: 0.75rem; color: var(--text-main); margin: 0; line-height: 1.3; font-style: italic; }
+
+.btn-apply {
+    width: 100%; margin-top: 12px; padding: 9px; border: none;
+    background: var(--green-deep); color: white; border-radius: 8px;
+    font-weight: 700; font-size: 0.75rem; cursor: pointer; transition: 0.2s;
+}
+.btn-apply:hover { background: var(--green-mid); }
+
+@keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
 
 </style>
 
 <script>
-function copyCid() {
+document.addEventListener("DOMContentLoaded", () => {
+
+// ===== COPY COMPLAINT ID =====
+window.copyCid = function() {
     const cidText = document.getElementById("cmpId").innerText;
     navigator.clipboard.writeText(cidText);
-    const btn = event.target.closest('button');
-    btn.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
-    btn.style.background = '#dcfce7';
-    setTimeout(() => { btn.innerHTML = '<i class="bi bi-clipboard"></i> Copy'; btn.style.background = ''; }, 2000);
-}
+};
 
-function previewImage(event) {
+// ===== IMAGE PREVIEW (main form) =====
+window.previewImage = function(event) {
     const file = event.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
-        document.getElementById("drop-placeholder").style.display = "none";
-        const preview = document.getElementById("img-preview");
+        const preview = document.getElementById('img-preview');
+        const placeholder = document.getElementById('drop-placeholder');
         preview.src = e.target.result;
-        preview.style.display = "block";
+        preview.style.display = 'block';
+        if (placeholder) placeholder.style.display = 'none';
     };
     reader.readAsDataURL(file);
-}
+};
 
-function getLocation() {
-    const btn = document.getElementById("gps-btn");
-    const status = document.getElementById("gps-status");
+// ===== GPS LOCATION with Reverse Geocoding =====
+window.getLocation = function() {
+    const status  = document.getElementById('gps-status');
+    const btn     = document.getElementById('gps-btn');
+    const addrBox = document.getElementById('address-input');
+
     if (!navigator.geolocation) {
-        status.innerHTML = '⚠ Browser does not support GPS.';
+        status.innerText = "GPS not supported by your browser.";
         return;
     }
-    btn.innerHTML = '<i class="bi bi-arrow-repeat spin"></i> Detecting Location...';
+
+    btn.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i> Detecting...';
+    btn.disabled  = true;
+    status.innerText = "Fetching your location...";
+
     navigator.geolocation.getCurrentPosition(
-        (pos) => {
-            const lat = pos.coords.latitude.toFixed(6);
-            const lng = pos.coords.longitude.toFixed(6);
-            document.getElementById("lat-input").value = lat;
-            document.getElementById("lng-input").value = lng;
-            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
-                .then(r => r.json())
-                .then(data => {
-                    const addr = data.display_name || `${lat}, ${lng}`;
-                    document.getElementById("address-input").value = addr;
-                    status.innerHTML = `✅ Location set: ${addr.substring(0, 50)}...`;
-                });
-            btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Location Captured';
-            btn.style.background = '#dcfce7';
-            btn.style.color = '#166534';
-            btn.style.borderColor = '#86efac';
+        async (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+
+            document.getElementById('lat-input').value = lat;
+            document.getElementById('lng-input').value = lng;
+
+            // Reverse geocode using OpenStreetMap Nominatim (free, no key needed)
+            try {
+                status.innerText = "📍 Coordinates found. Fetching address...";
+                const res  = await fetch(
+                    `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+                    { headers: { "Accept-Language": "en" } }
+                );
+                const geo  = await res.json();
+                const addr = geo.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+                addrBox.value    = addr;
+                status.innerText = "✅ Location & address filled automatically.";
+            } catch (e) {
+                // Fallback: just fill coordinates if geocoding fails
+                addrBox.value    = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+                status.innerText = "✅ Location captured (address lookup failed, coordinates used).";
+            }
+
+            btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Location Detected';
+            btn.disabled  = false;
         },
         (err) => {
-            status.innerHTML = `⚠ GPS Error: ${err.message}`;
-            btn.innerHTML = '<i class="bi bi-crosshair2"></i> Retry GPS';
-        }
+            const msgs = {
+                1: "Permission denied. Please allow location access.",
+                2: "Position unavailable. Try again or enter manually.",
+                3: "Location request timed out. Try again.",
+            };
+            status.innerText = msgs[err.code] || "Could not detect location.";
+            btn.innerHTML = '<i class="bi bi-crosshair2"></i> Auto-Detect My Location (GPS)';
+            btn.disabled  = false;
+        },
+        { timeout: 10000, maximumAge: 0 }
     );
-}
+};
+
+// ===== GLOBAL STATE =====
+let mediaRecorder;
+let audioChunks = [];
+let recordedAudioBlob = null;
+let selectedImageFile = null;
+let currentMode = 'voice';
+
+// ===== PANEL TOGGLE =====
+window.toggleAIPanel = function () {
+    const panel = document.getElementById('ai-panel');
+    panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+};
+
+// ===== MODE SWITCH =====
+window.switchMode = function(mode) {
+    currentMode = mode;
+
+    document.getElementById('voice-mode-btn').classList.toggle('active', mode === 'voice');
+    document.getElementById('image-mode-btn').classList.toggle('active', mode === 'image');
+
+    document.getElementById('voice-section').classList.toggle('active', mode === 'voice');
+    document.getElementById('image-section').classList.toggle('active', mode === 'image');
+
+    // Reset UI when switching
+    document.getElementById('ai-result').style.display = 'none';
+    document.getElementById('audio-preview').style.display = 'none';
+    document.getElementById('generate-audio-btn').style.display = 'none';
+    document.getElementById('generate-image-btn').style.display = 'none';
+};
+
+// ===== VOICE RECORDING =====
+document.getElementById('start-record').onclick = async function () {
+    const btn = this;
+
+    if (btn.classList.contains('recording')) {
+        mediaRecorder.stop();
+        btn.classList.remove('recording');
+        btn.innerHTML = '<i class="bi bi-mic-fill"></i><div class="pulse-ring"></div>';
+        return;
+    }
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+
+        mediaRecorder.onstop = () => {
+            // FIX: Use audio/webm which browsers actually record in
+            recordedAudioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+
+            const audioURL = URL.createObjectURL(recordedAudioBlob);
+            const audioPreview = document.getElementById('audio-preview');
+            audioPreview.src = audioURL;
+            audioPreview.style.display = 'block';
+
+            document.getElementById('generate-audio-btn').style.display = 'block';
+            document.getElementById('ai-status').innerText = "Recording saved. Click 'Generate Complaint' to analyze.";
+        };
+
+        mediaRecorder.start();
+        btn.classList.add('recording');
+        btn.innerHTML = '<i class="bi bi-stop-fill"></i><div class="pulse-ring"></div>';
+        document.getElementById('ai-status').innerText = "Recording... Click again to stop.";
+
+    } catch (err) {
+        document.getElementById('ai-status').innerText = "Microphone permission required.";
+    }
+};
+
+// ===== GENERATE FROM AUDIO =====
+document.getElementById('generate-audio-btn').onclick = async function () {
+    if (!recordedAudioBlob) return;
+
+    const status = document.getElementById('ai-status');
+    const btn = this;
+    status.innerText = "Analyzing voice... please wait.";
+    btn.disabled = true;
+    btn.innerText = "Analyzing...";
+
+    let formData = new FormData();
+    // Send with correct mime type so backend can determine extension
+    formData.append('audio', recordedAudioBlob, 'recording.webm');
+
+    try {
+        const res = await fetch('/analyse-complaint', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await res.json();
+
+        if (data.error) throw new Error(data.error);
+
+        document.getElementById('ai-result').style.display = 'block';
+        document.getElementById('detected-cat').innerText = data.category;
+        document.getElementById('detected-desc').innerText = data.description;
+
+        status.innerText = "✅ Analysis complete! Review below.";
+
+    } catch (err) {
+        status.innerText = "❌ Error: " + err.message;
+        console.error(err);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Generate Complaint";
+    }
+};
+
+// ===== IMAGE UPLOAD (AI panel) =====
+window.handleAIImageUpload = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    selectedImageFile = file;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const preview = document.getElementById('ai-image-preview');
+        const placeholder = document.querySelector('#image-upload-zone .upload-placeholder');
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        if (placeholder) placeholder.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+
+    document.getElementById('generate-image-btn').style.display = 'block';
+};
+
+// ===== GENERATE FROM IMAGE =====
+document.getElementById('generate-image-btn').onclick = async function () {
+    if (!selectedImageFile) return;
+
+    const status = document.getElementById('image-status');
+    const btn = this;
+    status.innerText = "Analyzing image... please wait.";
+    btn.disabled = true;
+    btn.innerText = "Analyzing...";
+
+    let formData = new FormData();
+    formData.append('image', selectedImageFile);
+
+    try {
+        const res = await fetch('/analyse-complaint', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await res.json();
+
+        if (data.error) throw new Error(data.error);
+
+        document.getElementById('ai-result').style.display = 'block';
+        document.getElementById('detected-cat').innerText = data.category;
+        document.getElementById('detected-desc').innerText = data.description;
+
+        status.innerText = "✅ Analysis complete! Review below.";
+
+    } catch (err) {
+        status.innerText = "❌ Error: " + err.message;
+        console.error(err);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Generate Complaint";
+    }
+};
+
+// ===== AUTOFILL — FIX: case-insensitive category match =====
+window.autoFillForm = function() {
+    const categorySelect = document.getElementById('categorySelect');
+    const descriptionText = document.getElementById('descriptionText');
+
+    const catValue = document.getElementById('detected-cat').innerText.trim();
+    const descValue = document.getElementById('detected-desc').innerText.trim();
+
+    // Case-insensitive match against all <option> values
+    if (categorySelect && catValue) {
+        const options = Array.from(categorySelect.options);
+        const match = options.find(
+            o => o.value.toLowerCase() === catValue.toLowerCase()
+        );
+        if (match) {
+            categorySelect.value = match.value;
+        } else {
+            // If no exact match, default to "other"
+            categorySelect.value = "other";
+        }
+    }
+
+    if (descriptionText && descValue) {
+        descriptionText.value = descValue;
+    }
+
+    toggleAIPanel();
+
+    // Scroll to form
+    const formTop = document.querySelector('.form-card');
+    if (formTop) formTop.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+});
 </script>
 {% endblock %}

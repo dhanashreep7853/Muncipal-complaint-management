@@ -51,7 +51,7 @@
             </div>
             {% endif %}
 
-            <form method="post" id="signupForm" autocomplete="off">
+            <form method="post" id="signupForm" autocomplete="off" novalidate>
                 <input type="text" name="fakeuser" style="display:none">
                 <input type="password" name="fakepass" style="display:none">
 
@@ -71,12 +71,19 @@
                     <input name="email" type="email" class="field-input" placeholder="name@example.com" required>
                 </div>
 
-                <!-- Password -->
+                <!-- Password with eye toggle (same pattern as login.html) -->
                 <div class="field-group" style="--delay: 0.15s">
                     <label class="field-label">
                         <i class="bi bi-shield-lock-fill"></i> Set Password
                     </label>
-                    <input name="password" type="password" class="field-input" placeholder="••••••••••••" required>
+                    <div class="password-wrapper">
+                        <input name="password" id="signupPassword" type="password"
+                               class="field-input password-input"
+                               placeholder="••••••••••••" required>
+                        <button type="button" class="toggle-eye" onclick="toggleSignupPassword()">
+                            <i class="bi bi-eye-slash" id="signupToggleIcon"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- State -->
@@ -372,6 +379,30 @@ body { font-family: 'DM Sans', sans-serif; background: var(--green-faint); }
     line-height: 1.5;
 }
 
+/* ===== PASSWORD TOGGLE (eye icon) ===== */
+/* Reused from login.html — same pattern, same styles */
+.password-wrapper {
+    position: relative;
+}
+.password-input {
+    padding-right: 48px;
+}
+.toggle-eye {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 1rem;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.2s;
+}
+.toggle-eye:hover { color: var(--green-mid); }
+
 /* ===== SUBMIT BUTTON ===== */
 .btn-submit {
     width: 100%;
@@ -434,6 +465,19 @@ body { font-family: 'DM Sans', sans-serif; background: var(--green-faint); }
 </style>
 
 <script>
+// Toggle password visibility
+function toggleSignupPassword() {
+    const input = document.getElementById('signupPassword');
+    const icon  = document.getElementById('signupToggleIcon');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('bi-eye-slash', 'bi-eye');
+    } else {
+        input.type = 'password';
+        icon.classList.replace('bi-eye', 'bi-eye-slash');
+    }
+}
+
 function toggleAdminField() {
     const role = document.getElementById("roleSelect").value;
     const adminSection = document.getElementById("adminCodeSection");
@@ -449,18 +493,33 @@ function toggleAdminField() {
     }
 }
 
-window.onload = function () {
+function hardResetForm() {
     const form = document.getElementById("signupForm");
-    if (form) {
-        form.reset();
-        document.querySelectorAll("input").forEach(i => i.value = "");
-        document.querySelectorAll("select").forEach(s => s.selectedIndex = 0);
-        toggleAdminField();
-    }
-};
+    if (!form) return;
+    form.reset();
+    // Explicitly blank every text/email/password/select field
+    form.querySelectorAll("input:not([type=hidden])").forEach(i => {
+        i.value = "";
+        // Trick browser autofill: briefly set to readonly then remove
+        i.setAttribute("readonly", true);
+        setTimeout(() => i.removeAttribute("readonly"), 50);
+    });
+    form.querySelectorAll("select").forEach(s => s.selectedIndex = 0);
+    toggleAdminField();
+}
 
-window.addEventListener('pageshow', function (event) {
-    if (event.persisted) window.location.reload();
+// On initial load
+window.addEventListener('DOMContentLoaded', hardResetForm);
+
+// On back/forward navigation — bfcache returns persisted pages with old data
+// Replace the history entry so "back" can't return to a filled form
+window.addEventListener('pageshow', function (e) {
+    if (e.persisted) {
+        // Page was restored from bfcache — force a full reload
+        window.location.replace(window.location.href);
+    } else {
+        hardResetForm();
+    }
 });
 </script>
 
