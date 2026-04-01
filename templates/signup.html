@@ -51,7 +51,7 @@
             </div>
             {% endif %}
 
-            <form method="post" id="signupForm" autocomplete="off" novalidate>
+            <form method="post" id="signupForm" autocomplete="off">
                 <input type="text" name="fakeuser" style="display:none">
                 <input type="password" name="fakepass" style="display:none">
 
@@ -69,6 +69,16 @@
                         <i class="bi bi-envelope-at-fill"></i> Email Address
                     </label>
                     <input name="email" type="email" class="field-input" placeholder="name@example.com" required>
+                </div>
+
+                <!-- Mobile Number -->
+                <div class="field-group" style="--delay: 0.12s">
+                    <label class="field-label">
+                        <i class="bi bi-phone-fill"></i> Mobile Number
+                    </label>
+                    <input name="mobile" type="tel" class="field-input"
+                           placeholder="10-digit mobile number"
+                           pattern="[0-9]{10}" maxlength="10">
                 </div>
 
                 <!-- Password with eye toggle (same pattern as login.html) -->
@@ -465,7 +475,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--green-faint); }
 </style>
 
 <script>
-// Toggle password visibility
+// Toggle password visibility — same pattern as login.html
 function toggleSignupPassword() {
     const input = document.getElementById('signupPassword');
     const icon  = document.getElementById('signupToggleIcon');
@@ -493,33 +503,18 @@ function toggleAdminField() {
     }
 }
 
-function hardResetForm() {
+window.onload = function () {
     const form = document.getElementById("signupForm");
-    if (!form) return;
-    form.reset();
-    // Explicitly blank every text/email/password/select field
-    form.querySelectorAll("input:not([type=hidden])").forEach(i => {
-        i.value = "";
-        // Trick browser autofill: briefly set to readonly then remove
-        i.setAttribute("readonly", true);
-        setTimeout(() => i.removeAttribute("readonly"), 50);
-    });
-    form.querySelectorAll("select").forEach(s => s.selectedIndex = 0);
-    toggleAdminField();
-}
-
-// On initial load
-window.addEventListener('DOMContentLoaded', hardResetForm);
-
-// On back/forward navigation — bfcache returns persisted pages with old data
-// Replace the history entry so "back" can't return to a filled form
-window.addEventListener('pageshow', function (e) {
-    if (e.persisted) {
-        // Page was restored from bfcache — force a full reload
-        window.location.replace(window.location.href);
-    } else {
-        hardResetForm();
+    if (form) {
+        form.reset();
+        document.querySelectorAll("input").forEach(i => i.value = "");
+        document.querySelectorAll("select").forEach(s => s.selectedIndex = 0);
+        toggleAdminField();
     }
+};
+
+window.addEventListener('pageshow', function (event) {
+    if (event.persisted) window.location.reload();
 });
 </script>
 

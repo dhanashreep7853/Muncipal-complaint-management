@@ -593,10 +593,26 @@ body { font-family: 'DM Sans', sans-serif; background: var(--green-faint); }
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-// ===== COPY COMPLAINT ID =====
+// ===== COPY COMPLAINT ID — shows ✔ tick on button after copy =====
 window.copyCid = function() {
     const cidText = document.getElementById("cmpId").innerText;
-    navigator.clipboard.writeText(cidText);
+    const btn = document.querySelector(".cid-copy-btn");
+ 
+    navigator.clipboard.writeText(cidText).then(() => {
+        // Show tick
+        btn.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
+        btn.style.background = '#dcfce7';
+        btn.style.color = '#166534';
+        btn.style.borderColor = '#86efac';
+ 
+        // Revert after 2 seconds
+        setTimeout(() => {
+            btn.innerHTML = '<i class="bi bi-clipboard"></i> Copy ID';
+            btn.style.background = '';
+            btn.style.color = '';
+            btn.style.borderColor = '';
+        }, 2000);
+    });
 };
 
 // ===== IMAGE PREVIEW (main form) =====

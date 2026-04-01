@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Complaint Resolved – Municipal Complaint System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+</head>
+<body style="margin:0;padding:0;background:#eaf4ee;font-family:'DM Sans',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#eaf4ee;padding:40px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:20px;overflow:hidden;border:1px solid #d4e8da;box-shadow:0 8px 40px rgba(15,61,38,0.10);">
+
+      <!-- ── HEADER ── -->
+      <tr>
+        <td style="background:linear-gradient(160deg,#0f3d26 0%,#1a5c38 55%,#2d8653 100%);padding:40px 48px;text-align:center;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td align="center">
+                <table cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
+                  <tr>
+                    <td style="background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.15);border-radius:50px;padding:7px 18px;">
+                      <span style="font-size:14px;">📝</span>
+                      <span style="font-family:'Sora',sans-serif;color:rgba(255,255,255,0.9);font-size:13px;font-weight:600;letter-spacing:0.5px;vertical-align:middle;margin-left:6px;">GovPortal</span>
+                    </td>
+                  </tr>
+                </table>
+                <h1 style="font-family:'Sora',sans-serif;margin:0 0 6px;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.3px;">Municipal Complaint System</h1>
+                <p style="margin:0;color:rgba(255,255,255,0.65);font-size:12px;letter-spacing:1px;text-transform:uppercase;">Government of India &nbsp;·&nbsp; Citizen Services Portal</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <!-- ── BADGE STRIP — green success tone ── -->
+      <tr>
+        <td style="background:#d4edda;padding:16px 48px;text-align:center;border-bottom:1px solid #b0d8bc;">
+          <span style="display:inline-block;background:#155724;color:#fff;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:7px 22px;border-radius:50px;">✅ Complaint Resolved</span>
+        </td>
+      </tr>
+
+      <!-- ── BODY ── -->
+      <tr>
+        <td style="padding:40px 48px 12px;">
+          <p style="margin:0 0 12px;font-size:15px;color:#0f2d1c;font-family:'Sora',sans-serif;font-weight:600;">Dear {{ name }},</p>
+          <p style="margin:0 0 32px;font-size:14px;color:#5a7a65;line-height:1.75;">
+            We are pleased to inform you that your complaint has been
+            <strong style="color:#155724;">successfully resolved</strong>
+            by our municipal team. Thank you for bringing this issue to our attention
+            and helping us serve the community better.
+          </p>
+
+          <!-- RESOLVED HERO — dark green card like the CID hero in registered email -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+            <tr>
+              <td style="background:linear-gradient(135deg,#0f3d26,#155724);border-radius:14px;padding:22px 28px;">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td valign="middle">
+                      <!-- check circle -->
+                      <table cellpadding="0" cellspacing="0" style="display:inline-table;vertical-align:middle;margin-right:16px;">
+                        <tr>
+                          <td style="width:52px;height:52px;background:rgba(255,255,255,0.12);border-radius:50%;text-align:center;vertical-align:middle;font-size:26px;">✅</td>
+                        </tr>
+                      </table>
+                    </td>
+                    <td valign="middle" style="padding-left:14px;">
+                      <p style="margin:0 0 3px;font-family:'Sora',sans-serif;font-size:17px;font-weight:700;color:#ffffff;">Issue Successfully Resolved</p>
+                      <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.55);">Complaint ID: {{ complaint_id }}</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+
+          <!-- DETAILS LABEL -->
+          <p style="margin:0 0 10px;font-family:'Sora',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#2d8653;">Resolution Details</p>
+
+          <!-- DETAILS TABLE -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="border:1.5px solid #b0d8bc;border-radius:14px;overflow:hidden;margin-bottom:28px;">
+            <tr style="background:#f8fbf9;">
+              <td style="padding:13px 20px;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;color:#5a7a65;text-transform:uppercase;letter-spacing:0.4px;width:42%;border-bottom:1px solid #deeee4;">Complaint ID</td>
+              <td style="padding:13px 20px;font-family:monospace;font-size:13px;font-weight:700;color:#0f2d1c;border-bottom:1px solid #deeee4;">{{ complaint_id }}</td>
+            </tr>
+            <tr>
+              <td style="padding:13px 20px;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;color:#5a7a65;text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid #deeee4;">Category</td>
+              <td style="padding:13px 20px;font-size:13px;color:#0f2d1c;border-bottom:1px solid #deeee4;">{{ category }}</td>
+            </tr>
+            <tr style="background:#f8fbf9;">
+              <td style="padding:13px 20px;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;color:#5a7a65;text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid #deeee4;">Description</td>
+              <td style="padding:13px 20px;font-size:13px;color:#0f2d1c;border-bottom:1px solid #deeee4;">{{ description }}</td>
+            </tr>
+            <tr>
+              <td style="padding:13px 20px;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;color:#5a7a65;text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid #deeee4;">Submitted On</td>
+              <td style="padding:13px 20px;font-size:13px;color:#0f2d1c;border-bottom:1px solid #deeee4;">{{ timestamp }}</td>
+            </tr>
+            <tr style="background:#f8fbf9;">
+              <td style="padding:13px 20px;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;color:#5a7a65;text-transform:uppercase;letter-spacing:0.4px;border-bottom:1px solid #deeee4;">Resolved On</td>
+              <td style="padding:13px 20px;font-size:13px;font-weight:700;color:#155724;border-bottom:1px solid #deeee4;">✅ {{ resolved_on }}</td>
+            </tr>
+            <tr>
+              <td style="padding:13px 20px;font-family:'Sora',sans-serif;font-size:12px;font-weight:700;color:#5a7a65;text-transform:uppercase;letter-spacing:0.4px;">Status</td>
+              <td style="padding:13px 20px;">
+                <span style="background:#d4edda;color:#155724;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;padding:5px 14px;border-radius:50px;">✅ Resolved</span>
+              </td>
+            </tr>
+          </table>
+
+          <!-- INFO NOTE — left green border -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+            <tr>
+              <td style="background:#f0f9f4;border-left:4px solid #2d8653;border-radius:0 10px 10px 0;padding:14px 18px;font-size:13px;color:#2a5c38;line-height:1.65;">
+                If the issue <strong>still persists</strong> at your location, you may file a new complaint
+                and our team will look into it promptly.
+              </td>
+            </tr>
+          </table>
+
+          <!-- CTA BUTTON -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
+            <tr>
+              <td align="center">
+                <a href="https://487f0b5x-5000.inc1.devtunnels.ms/submit"
+                   style="display:inline-block;background:linear-gradient(135deg,#2d8653 0%,#0f3d26 100%);color:#ffffff;text-decoration:none;font-family:'Sora',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.8px;padding:15px 36px;border-radius:12px;box-shadow:0 4px 18px rgba(26,92,56,0.30);">
+                  📝 &nbsp;FILE ANOTHER COMPLAINT
+                </a>
+              </td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+
+      <!-- ── FOOTER ── -->
+      <tr>
+        <td style="background:#f0f4f0;border-top:1px solid #d4e8da;padding:20px 48px;text-align:center;border-radius:0 0 20px 20px;">
+          <p style="margin:0;font-size:11.5px;color:#8a9e94;">This is an automated message from the Municipal Complaint Management System.</p>
+          <p style="margin:6px 0 0;font-size:11px;color:#aab8b2;letter-spacing:0.5px;">© 2026 Government of India &nbsp;·&nbsp; All Rights Reserved</p>
+        </td>
+      </tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>

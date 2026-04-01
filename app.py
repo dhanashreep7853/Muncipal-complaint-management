@@ -4,7 +4,7 @@ app.py — Municipal Complaint Management System (Flask Backend)
 
 HOW TO RUN:
     1. Install dependencies first:
-          pip install -r requirements.txt
+          python -m pip install -r requirements.txt
 
     2. Create a .env file in the same folder with:
           GEMINI_API_KEY=your_gemini_api_key_here
@@ -12,18 +12,13 @@ HOW TO RUN:
           EMAIL_PASSWORD=your_gmail_app_password
           SECRET_KEY=any_long_random_string
 
-    3. Run:
+    3. Place email templates in:
+          templates/emails/email_otp.html
+          templates/emails/email_complaint_registered.html
+          templates/emails/email_complaint_resolved.html
+
+    4. Run:
           python app.py
-
-WHY IT WASN'T STARTING:
-    - CRASH 1 (line 8): `from google import genai` — the `google-genai`
-      package was not installed. Python crashed immediately with
-      ImportError before Flask even started, so the terminal showed nothing.
-
-    - CRASH 2 (line 18): Even if genai was installed, `genai.Client(api_key=None)`
-      crashes when GEMINI_API_KEY is missing from .env.
-
-    Both are now fixed with a safe lazy-import + guard below.
 """
 
 from flask import Flask, jsonify, render_template, request, redirect, session, url_for, flash
@@ -36,21 +31,18 @@ from werkzeug.utils import secure_filename
 import os
 import smtplib
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 import json
 import tempfile
 
-# ─── LOAD .env FILE ──────────────────────────────────────────────────────────
+# ─── LOAD .env FILE ───────────────────────────────────────────────────────────
 # Must be called before any os.getenv() so .env values are available.
 load_dotenv()
 
-# ─── GEMINI AI — SAFE IMPORT ─────────────────────────────────────────────────
-# FIX: The original code imported genai at module level.
-# If `google-genai` is not installed, Python crashes instantly with ImportError
-# and Flask never starts — the terminal shows nothing at all.
-#
-# Fix: wrap in try/except so the app still starts even without the package.
-# The /analyse-complaint route checks `AI_AVAILABLE` before using it.
+# ─── GEMINI AI — SAFE IMPORT ──────────────────────────────────────────────────
+# Wrapped in try/except so the app still starts even without the package.
+# The /analyse-complaint route checks AI_AVAILABLE before using it.
 AI_AVAILABLE = False
 genai_client = None
 
@@ -60,9 +52,8 @@ try:
 
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
     if GEMINI_API_KEY:
-        # FIX: genai.Client(api_key=None) crashes — guard with explicit check
-        genai_client  = genai.Client(api_key=GEMINI_API_KEY)
-        AI_AVAILABLE  = True
+        genai_client = genai.Client(api_key=GEMINI_API_KEY)
+        AI_AVAILABLE = True
         print("[Gemini] AI client initialized successfully.")
     else:
         print("[Gemini] WARNING: GEMINI_API_KEY not set in .env — AI features disabled.")
@@ -72,12 +63,9 @@ except ImportError:
     print("[Gemini] Run:  pip install google-genai")
     print("[Gemini] AI features will be disabled until the package is installed.")
 
-# ─── FLASK APP ───────────────────────────────────────────────────────────────
+# ─── FLASK APP ────────────────────────────────────────────────────────────────
 app = Flask(__name__)
 
-# FIX: Secret key must come from .env in production — never hardcode it.
-# If SECRET_KEY is missing from .env, we fall back to a dev-only default
-# and print a clear warning instead of silently using a weak key.
 SECRET_KEY = os.getenv("SECRET_KEY", "").strip()
 if not SECRET_KEY:
     SECRET_KEY = "municipal_dev_key_CHANGE_IN_PRODUCTION"
@@ -93,33 +81,20 @@ ALLOWED_AUDIO      = {"wav", "mp3", "m4a", "ogg", "webm"}
 app.config["UPLOAD_FOLDER"]      = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024  # 50 MB max upload
 
-# Create the upload directory if it doesn't exist yet
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# ───Email CONFIGURATION ──────────────────────────────────────────────────────
-UPLOAD_FOLDER = "static/uploads"
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
-ALLOWED_AUDIO = {"wav", "mp3", "m4a", "ogg", "webm"}
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024  # 50MB max
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
+# ─── EMAIL CONFIGURATION ──────────────────────────────────────────────────────
 EMAIL_HOST     = "smtp.gmail.com"
 EMAIL_PORT     = 587
-
-# --- CONFIGURATION ---
-load_dotenv() # This must be at the top of your file
-
-# Pulling values from .env file
-EMAIL_USER = os.getenv("EMAIL_USER")
+EMAIL_USER     = os.getenv("EMAIL_USER")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
-# For debugging ONLY (remove this before presentation):
-print(f"DEBUG: System is using email: {EMAIL_USER}")
+# Email templates directory — all 3 HTML files live here
+EMAIL_TEMPLATES_DIR = os.path.join("templates", "emails")
+
+print(f"[Email] System is using email: {EMAIL_USER}")
 
 # ─── STATE → ADMIN AUTHORIZATION CODES ───────────────────────────────────────
-# Each state has a unique admin code. Admins must enter the correct
-# code during signup. Rotate these regularly in production.
 STATE_ADMIN_CODES = {
     "Andhra Pradesh":    "AP@ADMIN2026",
     "Arunachal Pradesh": "AR@ADMIN2026",
@@ -157,9 +132,6 @@ STATE_ADMIN_CODES = {
 }
 
 # ─── SLA DAYS PER COMPLAINT CATEGORY ─────────────────────────────────────────
-# How many days the authority has to resolve each category.
-# FIX: "air Pollution" → "Air Pollution" to match submit.html option value exactly.
-# A mismatched key causes all Air Pollution complaints to silently use 7-day SLA.
 SLA_DAYS = {
     "Garbage":         2,
     "Road Damage":     7,
@@ -173,7 +145,7 @@ SLA_DAYS = {
     "Buildings":       7,
     "Tree Cutting":    5,
     "Garden":          7,
-    "Air Pollution":   5,   # FIX: was "air Pollution" — key must match submit.html exactly
+    "Air Pollution":   5,
     "Dead Animal":     1,
     "Toilet":          3,
     "Food Safety":     3,
@@ -193,7 +165,6 @@ VALID_STATUS_MAP = {
 }
 
 # ─── GEMINI MODEL FALLBACK LIST ───────────────────────────────────────────────
-# Models are tried in order. On quota (429) or not-found (404), the next is tried.
 GEMINI_MODELS = [
     "gemini-2.5-flash",
     "gemini-2.0-flash-lite",
@@ -213,11 +184,9 @@ def connect():
 def init_db():
     """
     Create tables if they don't exist and safely add any missing columns.
-    Called at module load (not just inside __main__) so it runs under
-    Gunicorn/uWSGI in production too.
+    Called at module load so it runs under Gunicorn/uWSGI in production too.
     """
     with connect() as conn:
-        # Complaints table — includes latitude/longitude for GPS data from form
         conn.execute("""
             CREATE TABLE IF NOT EXISTS complaints (
                 id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -228,7 +197,9 @@ def init_db():
                 description  TEXT    NOT NULL,
                 status       TEXT    NOT NULL DEFAULT 'Pending',
                 timestamp    TEXT    NOT NULL,
+                deadline     TEXT    DEFAULT '',
                 image        TEXT    DEFAULT '',
+                image_name   TEXT    DEFAULT '',
                 address      TEXT    DEFAULT '',
                 latitude     TEXT    DEFAULT '',
                 longitude    TEXT    DEFAULT '',
@@ -236,7 +207,6 @@ def init_db():
             )
         """)
 
-        # Users table
         conn.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id       INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -245,23 +215,27 @@ def init_db():
                 password TEXT    NOT NULL,
                 role     TEXT    NOT NULL DEFAULT 'user',
                 state    TEXT    DEFAULT '',
+                mobile   TEXT    DEFAULT '',
                 verified INTEGER DEFAULT 0
             )
         """)
 
-        # Safe migrations: add columns that may be missing in existing databases.
-        # ALTER TABLE fails silently if the column already exists — that's intentional.
+        # Safe migrations — silently skip columns that already exist
         safe_columns = [
-            ("complaints", "mobile",    "TEXT DEFAULT ''"),
-            ("complaints", "latitude",  "TEXT DEFAULT ''"),
-            ("complaints", "longitude", "TEXT DEFAULT ''"),
-            ("complaints", "address",   "TEXT DEFAULT ''"),
+            ("complaints", "mobile",     "TEXT DEFAULT ''"),
+            ("complaints", "latitude",   "TEXT DEFAULT ''"),
+            ("complaints", "longitude",  "TEXT DEFAULT ''"),
+            ("complaints", "address",    "TEXT DEFAULT ''"),
+            ("complaints", "deadline",   "TEXT DEFAULT ''"),
+            ("complaints", "image_name", "TEXT DEFAULT ''"),
+            ("complaints", "user_id",    "INTEGER DEFAULT NULL"),
+            ("users",      "mobile",     "TEXT DEFAULT ''"),
         ]
         for table, col, col_def in safe_columns:
             try:
                 conn.execute(f"ALTER TABLE {table} ADD COLUMN {col} {col_def}")
             except Exception:
-                pass  # Column already exists — skip silently
+                pass
 
         conn.commit()
 
@@ -285,51 +259,196 @@ def generate_complaint_id():
     return "CMP-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=10))
 
 
-# ─── EMAIL OTP SENDER ─────────────────────────────────────────────────────────
+# ─── EMAIL TEMPLATE LOADER ────────────────────────────────────────────────────
+
+def _load_template(filename: str, **kwargs) -> str:
+    """
+    Load an HTML email template from templates/emails/<filename>
+    and substitute {{ key }} placeholders with the provided kwargs values.
+
+    Returns the rendered HTML string.
+    Returns an empty string if the file is missing or unreadable —
+    the caller will then send a plain-text-only email as fallback.
+    """
+    path = os.path.join(EMAIL_TEMPLATES_DIR, filename)
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            html = f.read()
+        for key, value in kwargs.items():
+            html = html.replace("{{ " + key + " }}", str(value) if value else "")
+        return html
+    except FileNotFoundError:
+        print(f"[Email] Template not found: {path}")
+        return ""
+    except Exception as e:
+        print(f"[Email] Template load error ({filename}): {e}")
+        return ""
+
+
+# ─── EMAIL: OTP ───────────────────────────────────────────────────────────────
 
 def send_otp_email(to_email, otp, name):
     """
-    Send a 6-digit OTP via Gmail SMTP.
-    Returns True on success, False on any failure.
-
-    FIX: Original returned True when credentials were missing — this masked
-    config errors. Now returns False and prints a clear warning.
+    Send the 6-digit OTP verification email.
+    Uses templates/emails/email_otp.html for the HTML version.
+    Always includes a plain-text fallback for email clients that block HTML.
+    Returns True on success, False on failure.
     """
     if not EMAIL_USER or not EMAIL_PASSWORD:
         print("[Email] WARNING: EMAIL_USER or EMAIL_PASSWORD not set in .env — OTP not sent.")
         return False
 
+    html = _load_template("email_otp.html", name=name, otp=otp)
+
+    plain = (
+        f"Dear {name},\n\n"
+        f"Your OTP for the Municipal Complaint System is: {otp}\n\n"
+        f"Valid for 10 minutes. Do not share it with anyone.\n\n"
+        f"If you did not request this, please ignore this email.\n\n"
+        f"– Municipal Complaint System"
+    )
+
     try:
-        body = (
-            f"Dear {name},\n\n"
-            f"Your OTP for the Municipal Complaint System is:\n\n"
-            f"    {otp}\n\n"
-            f"This OTP is valid for 10 minutes. Do not share it with anyone.\n\n"
-            f"If you did not request this, please ignore this email.\n\n"
-            f"– Municipal Complaint System"
-        )
-        msg = MIMEText(body)
+        msg = MIMEMultipart("alternative")
         msg["Subject"] = "Email Verification OTP – Municipal Complaint System"
         msg["From"]    = EMAIL_USER
         msg["To"]      = to_email
+        msg.attach(MIMEText(plain, "plain"))
+        if html:
+            msg.attach(MIMEText(html, "html"))   # HTML part last = preferred by email clients
 
         with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT) as server:
             server.starttls()
             server.login(EMAIL_USER, EMAIL_PASSWORD)
             server.sendmail(EMAIL_USER, to_email, msg.as_string())
+
+        print(f"[Email] ✅ OTP sent to {to_email}")
         return True
 
     except Exception as e:
-        err_msg = str(e)
-        if "535" in err_msg or "BadCredentials" in err_msg or "Username and Password not accepted" in err_msg:
-            print("[Email] GMAIL AUTH FAILED: You must use a Gmail App Password, not your regular password.")
-            print("[Email] Steps to fix:")
-            print("[Email]   1. Go to https://myaccount.google.com/apppasswords")
-            print("[Email]   2. Create an App Password for 'Mail'")
-            print("[Email]   3. Copy the 16-character code into EMAIL_PASSWORD in your .env file")
-            print(f"[Email] Raw error: {e}")
-        else:
-            print(f"[Email] Error sending OTP: {e}")
+        print(f"[Email] Error sending OTP: {e}")
+        return False
+
+
+# ─── EMAIL: COMPLAINT CONFIRMATION ───────────────────────────────────────────
+
+def send_complaint_confirmation(to_email, name, cid, category, description, deadline_str, timestamp):
+    """
+    Send the complaint registration confirmation email.
+    Uses templates/emails/email_complaint_registered.html for the HTML version.
+    Returns True on success, False on failure.
+    """
+    if not EMAIL_USER or not EMAIL_PASSWORD:
+        print("[Email] WARNING: EMAIL credentials not set — complaint confirmation not sent.")
+        return False
+
+    html = _load_template(
+        "email_complaint_registered.html",
+        name=name,
+        complaint_id=cid,
+        category=category,
+        description=description,
+        deadline=deadline_str,
+        timestamp=timestamp,
+    )
+
+    plain = (
+        f"Dear {name},\n\n"
+        f"Your complaint has been successfully registered.\n\n"
+        f"Complaint ID : {cid}\n"
+        f"Category     : {category}\n"
+        f"Description  : {description}\n"
+        f"Submitted On : {timestamp}\n"
+        f"Deadline     : {deadline_str}\n"
+        f"Status       : Pending\n\n"
+        f"Track your complaint at: http://127.0.0.1:5000/track?cid={cid}\n\n"
+        f"– Municipal Complaint System"
+    )
+
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = f"Complaint Registered: {cid} – Municipal Complaint System"
+        msg["From"]    = EMAIL_USER
+        msg["To"]      = to_email
+        msg.attach(MIMEText(plain, "plain"))
+        if html:
+            msg.attach(MIMEText(html, "html"))
+
+        with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT) as server:
+            server.starttls()
+            server.login(EMAIL_USER, EMAIL_PASSWORD)
+            server.sendmail(EMAIL_USER, to_email, msg.as_string())
+
+        print(f"[Email] ✅ Complaint confirmation sent to {to_email}")
+        print(f"         Complaint ID : {cid}")
+        print(f"         Category     : {category}")
+        print(f"         Deadline     : {deadline_str}")
+        return True
+
+    except Exception as e:
+        print(f"[Email] Failed to send complaint confirmation: {e}")
+        return False
+
+
+# ─── EMAIL: COMPLAINT RESOLVED ────────────────────────────────────────────────
+
+def send_resolution_email(to_email, name, cid, category, description, timestamp):
+    """
+    Send the complaint resolution notification email.
+    Uses templates/emails/email_complaint_resolved.html for the HTML version.
+    Called automatically when an admin marks a complaint as Resolved.
+    Returns True on success, False on failure.
+    """
+    if not EMAIL_USER or not EMAIL_PASSWORD:
+        print("[Email] WARNING: EMAIL credentials not set — resolution email not sent.")
+        return False
+
+    resolved_on = datetime.now().strftime("%d %b %Y, %I:%M %p")
+
+    html = _load_template(
+        "email_complaint_resolved.html",
+        name=name,
+        complaint_id=cid,
+        category=category,
+        description=description,
+        timestamp=timestamp,
+        resolved_on=resolved_on,
+    )
+
+    plain = (
+        f"Dear {name},\n\n"
+        f"Your complaint has been successfully resolved.\n\n"
+        f"Complaint ID : {cid}\n"
+        f"Category     : {category}\n"
+        f"Description  : {description}\n"
+        f"Submitted On : {timestamp}\n"
+        f"Resolved On  : {resolved_on}\n\n"
+        f"If the issue still persists, please file a new complaint.\n\n"
+        f"– Municipal Complaint System"
+    )
+
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = f"Complaint Resolved: {cid} – Municipal Complaint System"
+        msg["From"]    = EMAIL_USER
+        msg["To"]      = to_email
+        msg.attach(MIMEText(plain, "plain"))
+        if html:
+            msg.attach(MIMEText(html, "html"))
+
+        with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT) as server:
+            server.starttls()
+            server.login(EMAIL_USER, EMAIL_PASSWORD)
+            server.sendmail(EMAIL_USER, to_email, msg.as_string())
+
+        print(f"[Email] ✅ Resolution email sent to {to_email}")
+        print(f"         Complaint ID : {cid}")
+        print(f"         Category     : {category}")
+        print(f"         Resolved On  : {resolved_on}")
+        return True
+
+    except Exception as e:
+        print(f"[Email] Failed to send resolution email: {e}")
         return False
 
 
@@ -338,17 +457,16 @@ def send_otp_email(to_email, otp, name):
 def get_sla_info(complaint):
     """
     Returns (sla_days, deadline_str, remaining_days) for a complaint.
-
-    FIX: Wrapped timestamp parsing in try/except — a malformed or NULL
-    timestamp in the DB would previously crash the entire admin/track page.
+    Timestamp parsing is wrapped in try/except — a malformed or NULL
+    timestamp will not crash the admin/track page.
     """
     category = complaint["category"]
-    sla_days = SLA_DAYS.get(category, 7)  # Default 7 days if category not in map
+    sla_days = SLA_DAYS.get(category, 7)
 
     try:
         submit_dt = datetime.strptime(complaint["timestamp"], "%Y-%m-%d %H:%M:%S")
     except (ValueError, TypeError):
-        submit_dt = datetime.now()  # Fallback: treat as submitted now
+        submit_dt = datetime.now()
 
     deadline     = submit_dt + timedelta(days=sla_days)
     deadline_str = deadline.strftime("%d %b %Y")
@@ -366,7 +484,6 @@ def call_gemini(contents):
     """
     Try each Gemini model in GEMINI_MODELS order until one succeeds.
     Only retries on quota (429) or not-found (404) errors.
-    All other errors are re-raised immediately.
     """
     last_error = None
     for model in GEMINI_MODELS:
@@ -419,24 +536,22 @@ def signup():
         name     = request.form.get("name", "").strip()
         email    = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
+        mobile   = request.form.get("mobile", "").strip()
         role     = request.form.get("role", "user")
         state    = request.form.get("state", "")
 
-        # Validate admin authorization code before doing anything else
         if role == "admin":
             entered_code = request.form.get("admin_code", "").strip()
             if entered_code != STATE_ADMIN_CODES.get(state, ""):
                 return render_template("signup.html", states=states,
                                        error="Invalid Admin Code for the selected state!")
 
-        # Check for duplicate email early — gives clearer error than post-OTP IntegrityError
         with connect() as conn:
             existing = conn.execute("SELECT id FROM users WHERE email=?", (email,)).fetchone()
         if existing:
             return render_template("signup.html", states=states,
                                    error="An account with this email already exists. Please log in.")
 
-        # Generate 6-digit OTP and store pending signup data in session
         otp = str(random.randint(100000, 999999))
         session["pending_signup"] = {
             "name":     name,
@@ -444,6 +559,7 @@ def signup():
             "password": generate_password_hash(password),
             "role":     role,
             "state":    state,
+            "mobile":   mobile,
             "otp":      otp,
             "otp_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         }
@@ -453,7 +569,7 @@ def signup():
         else:
             session.pop("pending_signup", None)
             return render_template("signup.html", states=states,
-                                   error="Failed to send OTP. Gmail rejected the credentials — use a Gmail App Password (not your regular password). See terminal for steps.")
+                                   error="Failed to send OTP. Check EMAIL_USER and EMAIL_PASSWORD in .env")
 
     return render_template("signup.html", states=states)
 
@@ -469,40 +585,35 @@ def verify_otp():
     """
     pending = session.get("pending_signup")
     if not pending:
-        # No pending signup in session — user navigated here directly
         return redirect(url_for("signup"))
 
     if request.method == "POST":
         entered_otp = request.form.get("otp", "").strip()
 
-        # Parse OTP timestamp safely
         try:
             otp_time = datetime.strptime(pending["otp_time"], "%Y-%m-%d %H:%M:%S")
         except (ValueError, TypeError):
             session.pop("pending_signup", None)
             return redirect(url_for("signup"))
 
-        # Check if OTP has expired (10-minute window)
         if datetime.now() - otp_time > timedelta(minutes=10):
             session.pop("pending_signup", None)
             return render_template("signup.html",
                                    error="OTP expired. Please register again.",
                                    states=list(STATE_ADMIN_CODES.keys()))
 
-        # Validate entered OTP
         if entered_otp == pending["otp"]:
             try:
                 with connect() as conn:
                     conn.execute(
-                        "INSERT INTO users (name, email, password, role, state, verified) VALUES(?,?,?,?,?,1)",
+                        "INSERT INTO users (name, email, password, role, state, mobile, verified) VALUES(?,?,?,?,?,?,1)",
                         (pending["name"], pending["email"], pending["password"],
-                         pending["role"], pending["state"]),
+                         pending["role"], pending["state"], pending.get("mobile", "")),
                     )
                 session.pop("pending_signup", None)
                 flash("Account verified! You can now log in.")
                 return redirect(url_for("login") + "?verified=1")
             except sqlite3.IntegrityError:
-                # Race condition — account created between check and insert
                 session.pop("pending_signup", None)
                 return render_template("verifyOTP.html", email=pending["email"],
                                        error="An account with this email already exists.")
@@ -519,18 +630,16 @@ def verify_otp():
 def resend_otp():
     """
     Resend a fresh OTP to the user's pending signup email.
-    FIX: This route was completely missing — verifyOTP.html links to /resend-otp
-    which caused a 404 every time the user clicked "Resend Code".
+    Generates a new OTP and resets the 10-minute expiry timer.
     """
     pending = session.get("pending_signup")
     if not pending:
         return redirect(url_for("signup"))
 
-    # Generate new OTP and reset the 10-minute timer
     new_otp = str(random.randint(100000, 999999))
     pending["otp"]      = new_otp
     pending["otp_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    session["pending_signup"] = pending  # Write updated data back to session
+    session["pending_signup"] = pending
 
     send_otp_email(pending["email"], new_otp, pending["name"])
     return redirect(url_for("verify_otp") + "?resent=1")
@@ -553,14 +662,10 @@ def login():
             user = conn.execute("SELECT * FROM users WHERE email=?", (email,)).fetchone()
 
         if user and check_password_hash(user["password"], password):
-            # FIX: Block unverified accounts — user must complete OTP step before logging in.
-            # Without this check, a user who never verified their email could still log in
-            # if they somehow reached the login page after partial signup.
             if not user["verified"]:
                 return render_template("login.html",
                                        error="Your email is not verified. Please complete OTP verification.")
 
-            # All checks passed — populate session and redirect by role
             session.update({
                 "user_id": user["id"],
                 "user":    user["name"],
@@ -569,7 +674,6 @@ def login():
             })
             return redirect(url_for("admin") if user["role"] == "admin" else url_for("home_page"))
 
-        # Wrong email or password — intentionally vague to prevent user enumeration
         return render_template("login.html", error="Invalid Email or Password.")
 
     return render_template("login.html")
@@ -581,41 +685,67 @@ def login():
 def submit():
     """
     File a new complaint. Login required.
-    Saves image upload and GPS coordinates (latitude/longitude) if provided.
+    Saves image upload and GPS coordinates if provided.
+    Sends confirmation email after successful submission.
     """
     if not session.get("user"):
         return redirect(url_for("login"))
 
     if request.method == "POST":
-        # Handle optional image upload
         img_name = ""
         file = request.files.get("image")
         if file and file.filename and allowed_file(file.filename):
             img_name = secure_filename(file.filename)
             file.save(os.path.join(app.config["UPLOAD_FOLDER"], img_name))
 
-        cid = generate_complaint_id()
+        cid         = generate_complaint_id()
+        category    = request.form.get("category", "other")
+        description = request.form.get("description", "").strip()
+        timestamp   = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        sla_days     = SLA_DAYS.get(category, 7)
+        deadline_dt  = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S") + timedelta(days=sla_days)
+        deadline_str = deadline_dt.strftime("%d %b %Y")
+        ts_display   = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S").strftime("%d %b %Y, %I:%M %p")
 
         with connect() as conn:
             conn.execute(
                 """INSERT INTO complaints
                    (complaint_id, name, category, description, status,
-                    timestamp, image, address, latitude, longitude, state, mobile)
-                   VALUES(?,?,?,?,?,?,?,?,?,?,?,?)""",
+                    timestamp, deadline, image, image_name, address,
+                    latitude, longitude, state, mobile, user_id)
+                   VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (
                     cid,
                     request.form.get("name", "").strip(),
-                    request.form.get("category", "other"),
-                    request.form.get("description", "").strip(),
+                    category,
+                    description,
                     "Pending",
-                    datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    timestamp,
+                    deadline_str,
+                    img_name,
                     img_name,
                     request.form.get("address", "").strip(),
-                    request.form.get("latitude", "").strip(),   # GPS lat from form
-                    request.form.get("longitude", "").strip(),  # GPS lng from form
+                    request.form.get("latitude", "").strip(),
+                    request.form.get("longitude", "").strip(),
                     session.get("state", ""),
                     request.form.get("mobile", "").strip(),
+                    session.get("user_id"),
                 ),
+            )
+            user_row = conn.execute(
+                "SELECT email, name FROM users WHERE id=?", (session.get("user_id"),)
+            ).fetchone()
+
+        if user_row:
+            send_complaint_confirmation(
+                to_email     = user_row["email"],
+                name         = user_row["name"],
+                cid          = cid,
+                category     = category,
+                description  = description,
+                deadline_str = deadline_str,
+                timestamp    = ts_display,
             )
 
         return render_template("submit.html", success_cid=cid)
@@ -630,14 +760,11 @@ def analyse_complaint():
     """
     Analyses a voice recording or image using Gemini AI.
     Returns JSON: {"category": "...", "description": "..."}
-
-    Returns a clear error (not a crash) if AI_AVAILABLE is False,
-    so the rest of the app keeps working even without the AI package.
+    Returns a clear 503 error if AI_AVAILABLE is False.
     """
     if not session.get("user"):
         return jsonify({"error": "Unauthorized"}), 401
 
-    # Return a helpful error instead of crashing if genai is not installed
     if not AI_AVAILABLE:
         return jsonify({
             "error": "AI features not available. Install google-genai and set GEMINI_API_KEY in .env"
@@ -662,7 +789,6 @@ def analyse_complaint():
             }
             ext = ext_map.get(mime_type, ".webm")
 
-            # Audio must be uploaded via Gemini File API (inline bytes not supported for audio)
             with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp:
                 tmp.write(audio_bytes)
                 tmp_path = tmp.name
@@ -673,7 +799,7 @@ def analyse_complaint():
                     config=genai_types.UploadFileConfig(mime_type=mime_type)
                 )
             finally:
-                os.unlink(tmp_path)  # Always delete temp file
+                os.unlink(tmp_path)
 
             prompt = (
                 "User is reporting a municipal issue in India.\n"
@@ -695,8 +821,6 @@ def analyse_complaint():
                 return jsonify({"error": "No image provided"}), 400
 
             image_bytes = image.read()
-
-            # 3-layer MIME type resolution: browser header → extension → magic bytes
             raw_mime    = image.mimetype or ""
             ext_to_mime = {
                 "jpg": "image/jpeg", "jpeg": "image/jpeg",
@@ -710,15 +834,14 @@ def analyse_complaint():
                 ext = (image.filename or "").rsplit(".", 1)[-1].lower()
                 mime_type = ext_to_mime.get(ext, "")
 
-            # Magic bytes fallback — identify format from first 12 bytes of file data
             if not mime_type or mime_type == "application/octet-stream":
                 header = image_bytes[:12]
-                if header[:8] == b'\x89PNG\r\n\x1a\n':   mime_type = "image/png"
-                elif header[:3] == b'\xff\xd8\xff':       mime_type = "image/jpeg"
+                if header[:8] == b'\x89PNG\r\n\x1a\n':            mime_type = "image/png"
+                elif header[:3] == b'\xff\xd8\xff':                mime_type = "image/jpeg"
                 elif header[:4] == b'RIFF' and header[8:12] == b'WEBP': mime_type = "image/webp"
-                elif header[:6] in (b'GIF87a', b'GIF89a'): mime_type = "image/gif"
-                elif header[:2] == b'BM':                  mime_type = "image/bmp"
-                else: mime_type = "image/jpeg"  # Safe default
+                elif header[:6] in (b'GIF87a', b'GIF89a'):         mime_type = "image/gif"
+                elif header[:2] == b'BM':                          mime_type = "image/bmp"
+                else:                                              mime_type = "image/jpeg"
 
             print(f"[Image] Resolved MIME type: {mime_type}")
 
@@ -739,15 +862,15 @@ def analyse_complaint():
         else:
             return jsonify({"error": "No file provided"}), 400
 
-        # ── SAFE JSON PARSE ────────────────────────────────────────────────────
+        # ── SAFE JSON PARSE ───────────────────────────────────────────────────
         raw_text = (response.text or "").strip()
         raw_text = raw_text.replace("```json", "").replace("```", "").strip()
         print(f"[Gemini] Raw response: {raw_text}")
 
         try:
-            start     = raw_text.find("{")
-            end       = raw_text.rfind("}") + 1
-            data      = json.loads(raw_text[start:end])
+            start = raw_text.find("{")
+            end   = raw_text.rfind("}") + 1
+            data  = json.loads(raw_text[start:end])
         except Exception:
             data = {"category": "Other", "description": raw_text[:200]}
 
@@ -763,8 +886,9 @@ def analyse_complaint():
 @app.route("/track", methods=["GET", "POST"])
 def track():
     """
-    Look up a complaint by ID. Accepts both POST (form) and GET (?cid=...) for URL sharing.
-    FIX: Input normalized to uppercase so CMP-abc123 matches CMP-ABC123.
+    Look up a complaint by ID.
+    Accepts both POST (form) and GET (?cid=...) for URL sharing.
+    Input is normalized to uppercase so cmp-abc123 matches CMP-ABC123.
     """
     complaint      = None
     sla_days       = 0
@@ -800,10 +924,8 @@ def track():
 @app.route("/admin")
 def admin():
     """
-    Admin dashboard for a specific state.
-    Shows all complaints sorted by urgency (overdue first, resolved last).
-    FIX: timestamp parsing wrapped in try/except — malformed timestamps
-    no longer crash the entire page.
+    Admin dashboard — shows all complaints for the admin's state,
+    sorted by urgency (overdue first, resolved last).
     """
     if session.get("role") != "admin":
         return redirect(url_for("login"))
@@ -838,15 +960,14 @@ def admin():
             return (1, 9999)
         sla = SLA_DAYS.get(c["category"], 7)
         try:
-            sub  = datetime.strptime(c["timestamp"], "%Y-%m-%d %H:%M:%S")
+            sub = datetime.strptime(c["timestamp"], "%Y-%m-%d %H:%M:%S")
         except (ValueError, TypeError):
-            sub  = datetime.now()
+            sub = datetime.now()
         dead = sub + timedelta(days=sla)
         return (0, (dead - datetime.now()).days)
 
     complaints_sorted = sorted(rows, key=sort_key)
 
-    # Attach SLA deadline info to each row for the template
     complaints_with_deadline = []
     for c in complaints_sorted:
         sla = SLA_DAYS.get(c["category"], 7)
@@ -881,8 +1002,8 @@ def admin():
 def update_status(id, status):
     """
     Update a complaint's status. Admin only.
-    FIX: Previously accepted any string via URL (e.g. /update/1/anything).
-    Now uses a whitelist — only 'progress' and 'resolved' are valid.
+    Only 'progress' and 'resolved' are accepted — anything else returns 400.
+    Automatically sends a resolution email when status is set to Resolved.
     """
     if session.get("role") != "admin":
         return redirect(url_for("login"))
@@ -893,6 +1014,37 @@ def update_status(id, status):
 
     with connect() as conn:
         conn.execute("UPDATE complaints SET status=? WHERE id=?", (new_status, id))
+
+        if new_status == "Resolved":
+            complaint = conn.execute(
+                "SELECT * FROM complaints WHERE id=?", (id,)
+            ).fetchone()
+            if complaint:
+                recipient = None
+                if complaint["user_id"]:
+                    recipient = conn.execute(
+                        "SELECT email, name FROM users WHERE id=?", (complaint["user_id"],)
+                    ).fetchone()
+                if not recipient:
+                    recipient = conn.execute(
+                        "SELECT email, name FROM users WHERE name=? AND role='user'",
+                        (complaint["name"],)
+                    ).fetchone()
+                if recipient:
+                    try:
+                        ts_display = datetime.strptime(
+                            complaint["timestamp"], "%Y-%m-%d %H:%M:%S"
+                        ).strftime("%d %b %Y, %I:%M %p")
+                    except Exception:
+                        ts_display = complaint["timestamp"]
+                    send_resolution_email(
+                        to_email    = recipient["email"],
+                        name        = complaint["name"],
+                        cid         = complaint["complaint_id"],
+                        category    = complaint["category"],
+                        description = complaint["description"],
+                        timestamp   = ts_display,
+                    )
 
     return redirect(url_for("admin"))
 
@@ -907,10 +1059,7 @@ def logout():
 
 
 # ─── STARTUP ──────────────────────────────────────────────────────────────────
-
-# FIX: init_db() is called at module level so it runs under Gunicorn/uWSGI too.
-# Original code only called it inside `if __name__ == "__main__"` which meant
-# tables were never created when using a production WSGI server.
+# init_db() is called at module level so it runs under Gunicorn/uWSGI too.
 init_db()
 
 if __name__ == "__main__":

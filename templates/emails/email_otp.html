@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>OTP Verification – Municipal Complaint System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+</head>
+<body style="margin:0;padding:0;background:#eaf4ee;font-family:'DM Sans',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#eaf4ee;padding:40px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:20px;overflow:hidden;border:1px solid #d4e8da;box-shadow:0 8px 40px rgba(15,61,38,0.10);">
+
+      <!-- ── HEADER ── -->
+      <tr>
+        <td style="background:linear-gradient(160deg,#0f3d26 0%,#1a5c38 55%,#2d8653 100%);padding:40px 48px;text-align:center;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td align="center">
+                <table cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
+                  <tr>
+                    <td style="background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.15);border-radius:50px;padding:7px 18px;">
+                      <span style="font-size:14px;">📝</span>
+                      <span style="font-family:'Sora',sans-serif;color:rgba(255,255,255,0.9);font-size:13px;font-weight:600;letter-spacing:0.5px;vertical-align:middle;margin-left:6px;">GovPortal</span>
+                    </td>
+                  </tr>
+                </table>
+                <h1 style="font-family:'Sora',sans-serif;margin:0 0 6px;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.3px;">Municipal Complaint System</h1>
+                <p style="margin:0;color:rgba(255,255,255,0.65);font-size:12px;letter-spacing:1px;text-transform:uppercase;">Government of India &nbsp;·&nbsp; Citizen Services Portal</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <!-- ── BADGE STRIP ── -->
+      <tr>
+        <td style="background:#f0fdf4;padding:16px 48px;text-align:center;border-bottom:1px solid #bbf7d0;">
+          <span style="display:inline-block;background:#1a5c38;color:#fff;font-family:'Sora',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:7px 22px;border-radius:50px;">🔐 Email Verification</span>
+        </td>
+      </tr>
+
+      <!-- ── BODY ── -->
+      <tr>
+        <td style="padding:40px 48px 12px;">
+          <p style="margin:0 0 12px;font-size:15px;color:#0f2d1c;font-family:'Sora',sans-serif;font-weight:600;">Dear {{ name }},</p>
+          <p style="margin:0 0 32px;font-size:14px;color:#5a7a65;line-height:1.75;">
+            To complete your registration on the Municipal Complaint Management System,
+            please verify your email address using the One-Time Password below.
+          </p>
+
+          <!-- OTP LABEL -->
+          <p style="margin:0 0 10px;font-family:'Sora',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#2d8653;">Your One-Time Password</p>
+
+          <!-- OTP BOX -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+            <tr>
+              <td style="background:#f8fbf9;border:2px dashed #d4e8da;border-radius:14px;padding:28px;text-align:center;">
+                <span style="font-family:'Sora',sans-serif;font-size:52px;font-weight:800;color:#0f3d26;letter-spacing:12px;display:block;">{{ otp }}</span>
+                <span style="font-size:12px;color:#5a7a65;margin-top:12px;display:block;">⏱ Valid for <strong>10 minutes</strong> only</span>
+              </td>
+            </tr>
+          </table>
+
+          <!-- WARNING NOTE — left gold border like submit.html info strip -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+            <tr>
+              <td style="background:#fffbf0;border-left:4px solid #f5c518;border-radius:0 10px 10px 0;padding:14px 18px;font-size:13px;color:#7a5c00;line-height:1.65;">
+                <strong>⚠ Do not share this OTP</strong> with anyone.
+                Municipal authorities will <strong>never</strong> ask for your OTP over call or message.
+              </td>
+            </tr>
+          </table>
+
+          <!-- DIVIDER -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+            <tr><td style="border-top:1px solid #e4ede8;font-size:0;line-height:0;">&nbsp;</td></tr>
+          </table>
+
+          <p style="margin:0 0 32px;font-size:13px;color:#8a9e94;line-height:1.65;">
+            If you did not request account registration, please ignore this email. No action is required on your part.
+          </p>
+        </td>
+      </tr>
+
+      <!-- ── FOOTER ── -->
+      <tr>
+        <td style="background:#f0f4f0;border-top:1px solid #d4e8da;padding:20px 48px;text-align:center;border-radius:0 0 20px 20px;">
+          <p style="margin:0;font-size:11.5px;color:#8a9e94;">This is an automated message from the Municipal Complaint Management System.</p>
+          <p style="margin:6px 0 0;font-size:11px;color:#aab8b2;letter-spacing:0.5px;">© 2026 Government of India &nbsp;·&nbsp; All Rights Reserved</p>
+        </td>
+      </tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>
