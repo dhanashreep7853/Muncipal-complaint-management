@@ -238,18 +238,18 @@
                             <div class="act-group">
                                 {% if c['status'] == 'Pending' %}
                                     <a href="#"
-                                       onclick="confirmAction('/update/{{ c['id'] }}/progress', 'Move to In Progress')"
+                                       onclick="confirmAction('/update/{{ c.id }}/progress', 'Move to In Progress')"
                                        class="act-btn act-blue" title="Set In Progress">
                                         <i class="bi bi-play-fill"></i>
                                     </a>
                                     <a href="#"
-                                       onclick="confirmAction('/update/{{ c['id'] }}/resolved', 'Mark as Resolved')"
+                                       onclick="confirmAction('/update/{{ c.id}}/resolved', 'Mark as Resolved')"
                                        class="act-btn act-green" title="Mark Resolved">
                                         <i class="bi bi-check-lg"></i>
                                     </a>
                                 {% elif c['status'] == 'In Progress' %}
                                     <a href="#"
-                                       onclick="confirmAction('/update/{{ c['id'] }}/resolved', 'Mark as Resolved')"
+                                       onclick="confirmAction('/update/{{ c.id }}/resolved', 'Mark as Resolved')"
                                        class="act-btn act-green" title="Mark Resolved">
                                         <i class="bi bi-check-lg"></i>
                                     </a>
