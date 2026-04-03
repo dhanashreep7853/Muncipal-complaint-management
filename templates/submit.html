@@ -683,8 +683,7 @@ window.getLocation = function() {
             btn.innerHTML = '<i class="bi bi-crosshair2"></i> Auto-Detect My Location (GPS)';
             btn.disabled  = false;
         },
-        { timeout: 10000, maximumAge: 0 }
-    );
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }    );
 };
 
 // ===== GLOBAL STATE =====

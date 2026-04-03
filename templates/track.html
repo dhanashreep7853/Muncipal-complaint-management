@@ -135,8 +135,7 @@
                 <div class="info-group info-full">
                     <label class="info-label">Evidence / Photo Attached</label>
                     <div class="img-frame">
-                        <img src="/static/uploads/{{ complaint['image'] }}" alt="Complaint Evidence">
-                    </div>
+                        <img src="{{ url_for('static', filename='uploads/' + complaint['image']) }}" alt="Complaint Evidence">                    </div>
                 </div>
                 {% endif %}
             </div>
