@@ -1,892 +1,295 @@
 {% extends "base.html" %}
 
-{% block content %}
-<meta http-equiv="Cache-Control" content="no-store" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
+{% block title %}Submit Complaint – Municipal Complaint System{% endblock %}
 
+{% block extra_head %}
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
-
-<div class="complaint-page">
-
-    <!-- LEFT DECORATIVE PANEL -->
-    <div class="complaint-left">
-        <div class="left-pattern"></div>
-        <div class="left-content">
-            <div class="brand-badge">
-                <span class="badge-icon">📝</span>
-                <span class="badge-text">GovPortal</span>
-            </div>
-            <h1 class="left-headline">Report.<br>Track.<br>Resolve.</h1>
-            <p class="left-sub">Submit civic complaints directly to the concerned municipal department. Your issue is logged, tracked, and resolved with full transparency.</p>
-            <div class="left-pills">
-                <span class="pill">✔ Instant complaint ID</span>
-                <span class="pill">✔ GPS-based routing</span>
-                <span class="pill">✔ Real-time tracking</span>
-            </div>
-        </div>
-        <div class="left-circle c1"></div>
-        <div class="left-circle c2"></div>
-    </div>
-
-    <!-- RIGHT FORM PANEL -->
-    <div class="complaint-right">
-
-        <!-- PAGE HEADING -->
-        <div class="form-heading">
-            <div class="heading-row">
-                <span class="heading-icon">📝</span>
-                <h2 class="heading-title">Submit a Complaint</h2>
-            </div>
-            <p class="heading-sub">Provide issue details and we'll route it to the right department</p>
-            <div class="heading-bar"></div>
-        </div>
-
-        <!-- SUCCESS CARD -->
-        {% if success_cid %}
-        <div class="success-card">
-            <div class="success-icon">✅</div>
-            <div class="success-body">
-                <h5 class="success-title">Complaint Registered Successfully!</h5>
-                <p class="success-sub">Save your Complaint ID below. You will need it to track your complaint status on the Track Page.</p>
-                <div class="cid-box">
-                    <code id="cmpId" class="cid-code">{{ success_cid }}</code>
-                    <button type="button" class="cid-copy-btn" onclick="copyCid()">
-                        <i class="bi bi-clipboard"></i> Copy ID
-                    </button>
-                </div>
-                <a href="/track" class="cid-track-btn">
-                    <i class="bi bi-search"></i> Go to Track Page
-                </a>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- FORM CARD -->
-        <div class="form-card">
-            <form method="post" enctype="multipart/form-data">
-
-                <!-- Full Name -->
-                <div class="field-group" style="--delay: 0.04s">
-                    <label class="field-label"><i class="bi bi-person-fill"></i> Full Name</label>
-                    <input class="field-input" name="name" placeholder="Enter your full name" required>
-                </div>
-
-                <!-- Mobile -->
-                <div class="field-group" style="--delay: 0.08s">
-                    <label class="field-label"><i class="bi bi-phone-fill"></i> Mobile Number</label>
-                    <input type="tel" class="field-input" name="mobile" placeholder="+91 XXXXX XXXXX" required>
-                </div>
-
-                <!-- Category -->
-                <div class="field-group" style="--delay: 0.12s">
-                    <label class="field-label"><i class="bi bi-tag-fill"></i> Complaint Category</label>
-                    <select class="field-input field-select" name="category" id="categorySelect" required>
-                        <option value="" disabled selected>Select a category</option>
-                        <option value="Garbage">🗑️ Garbage Collection</option>
-                        <option value="Road Damage">🚧 Road Damage</option>
-                        <option value="Streetlight">💡 Streetlight Issue</option>
-                        <option value="Water Supply">💧 Water Supply</option>
-                        <option value="Drainage">🌊 Drainage Problem</option>
-                        <option value="Mosquito">🦟 Mosquito Menace</option>
-                        <option value="Construction">🏗️ Illegal Construction</option>
-                        <option value="Encroachment">🏪 Footpath Encroachment</option>
-                        <option value="Hoardings">🖼️ Unauthorized Hoardings</option>
-                        <option value="Buildings">🏚️ Dangerous Buildings</option>
-                        <option value="Tree Cutting">🪓 Illegal Tree Cutting</option>
-                        <option value="Garden">🎡 Garden Maintenance</option>
-                        <option value="air Pollution">💨 Air Pollution</option>
-                        <option value="Dead Animal">🐕 Dead Animal Removal</option>
-                        <option value="Toilet">🚻 Public Toilet Issues</option>
-                        <option value="Food Safety">🍲 Food Safety</option>
-                        <option value="Stray Cattle">🐄 Stray Cattle</option>
-                        <option value="Noise Pollution">📢 Noise Pollution</option>
-                        <option value="Manhole">🕳️ Missing Manhole Covers</option>
-                        <option value="Dog">🐕‍🦺 Stray Dog Menace</option>
-                        <option value="Tax">💳 Property Tax Issues</option>
-                        <option value="Fire">🔥 Fire Safety</option>
-                        <option value="other">❓ Other</option>
-                    </select>
-                </div>
-
-                <!-- Description -->
-                <div class="field-group" style="--delay: 0.16s">
-                    <label class="field-label"><i class="bi bi-chat-text-fill"></i> Complaint Description</label>
-                    <textarea class="field-input field-textarea" name="description" id="descriptionText" rows="4"
-                              placeholder="Describe the issue in detail (location specifics, intensity, duration, etc.)" required></textarea>
-                </div>
-
-                <!-- Photo Upload -->
-                <div class="field-group" style="--delay: 0.2s">
-                    <label class="field-label"><i class="bi bi-camera-fill"></i> Photo Evidence</label>
-                    <div id="dropzone" onclick="document.getElementById('imgInput').click()">
-                        <div id="drop-placeholder">
-                            <div class="drop-icon">📸</div>
-                            <div class="drop-title">Click or Drag Photo Here</div>
-                            <div class="drop-hint">JPG, PNG, WEBP up to 5MB</div>
-                        </div>
-                        <img id="img-preview" src="" alt="Preview">
-                    </div>
-                    <input type="file" name="image" id="imgInput" accept="image/*" capture="camera" style="display:none" onchange="previewImage(event)">
-                </div>
-
-                <!-- Location -->
-                <div class="field-group" style="--delay: 0.24s">
-                    <label class="field-label"><i class="bi bi-geo-alt-fill"></i> Incident Location</label>
-                    <input type="hidden" name="latitude"  id="lat-input">
-                    <input type="hidden" name="longitude" id="lng-input">
-
-                    <div class="address-wrapper">
-                        <span class="address-icon"><i class="bi bi-map"></i></span>
-                        <input class="field-input address-input" name="address" id="address-input"
-                               placeholder="Enter address or landmark manually...">
-                    </div>
-
-                    <button type="button" onclick="getLocation()" id="gps-btn" class="gps-btn">
-                        <i class="bi bi-crosshair2"></i> Auto-Detect My Location (GPS)
-                    </button>
-                    <div id="gps-status" class="gps-status"></div>
-                </div>
-
-                <!-- Submit -->
-                <div class="field-group" style="--delay: 0.28s; margin-top: 8px;">
-                    <button type="submit" class="btn-submit">
-                        <i class="bi bi-send-fill"></i>
-                        FILE OFFICIAL COMPLAINT
-                    </button>
-                </div>
-
-            </form>
-        </div>
-    </div>
-
-    <!-- AI ASSISTANT BUTTON -->
-    <div id="ai-assistant-btn" onclick="toggleAIPanel()" title="AI Voice & Image Assistant">
-        <span class="ai-icon">🤖</span>
-        <small>AI Help</small>
-    </div>
-
-    <!-- AI ANALYSIS PANEL -->
-    <div id="ai-panel" class="ai-card">
-        <div class="ai-header">
-            <div class="ai-header-title">
-                <span class="dot-online"></span>
-                <h6>AI Complaint Assistant</h6>
-            </div>
-            <button onclick="toggleAIPanel()" class="btn-close-custom">✕</button>
-        </div>
-        
-        <div class="ai-body">
-            <!-- MODE SELECTOR -->
-            <div class="mode-selector">
-                <button type="button" class="mode-btn active" onclick="switchMode('voice')" id="voice-mode-btn">
-                    <i class="bi bi-mic-fill"></i> Voice
-                </button>
-                <button type="button" class="mode-btn" onclick="switchMode('image')" id="image-mode-btn">
-                    <i class="bi bi-image-fill"></i> Image
-                </button>
-            </div>
-
-            <!-- VOICE MODE -->
-            <div id="voice-section" class="ai-section active">
-                <p id="ai-status" class="ai-instruction">Click the mic and describe the issue in Marathi, Hindi, or English.</p>
-                <div class="mic-section">
-                    <button id="start-record" type="button" class="btn-mic">
-                        <i class="bi bi-mic-fill"></i>
-                        <div class="pulse-ring"></div>
-                    </button>
-                    <audio id="audio-preview" controls style="display:none; width:100%; margin-top:10px;"></audio>
-
-                    <button id="generate-audio-btn" style="display:none;" class="btn-apply">
-                        Generate Complaint
-                    </button>
-                </div>
-            </div>
-
-            <!-- IMAGE MODE -->
-            <div id="image-section" class="ai-section">
-                <p class="ai-instruction" id="image-status">Upload a photo of the issue for AI analysis.</p>
-                <div id="image-upload-zone" class="image-upload-zone" onclick="document.getElementById('aiImageInput').click()">
-                    <div class="upload-placeholder">
-                        <div class="upload-icon">📷</div>
-                        <div class="upload-title">Click or Drag Image Here</div>
-                        <div class="upload-hint">JPG, PNG, WEBP</div>
-                    </div>
-                    <img id="ai-image-preview" src="" alt="Preview" style="display:none; max-height: 200px; border-radius: 10px;">
-                </div>
-                <button id="generate-image-btn" style="display:none;" class="btn-apply">
-                    Generate Complaint
-                </button>
-                <input type="file" id="aiImageInput" accept="image/*" style="display:none" onchange="handleAIImageUpload(event)">
-            </div>
-
-            <!-- RESULTS -->
-            <div id="ai-result" style="display:none;" class="ai-result-view">
-                <div class="result-item">
-                    <label>Detected Category</label>
-                    <span id="detected-cat" class="ai-badge">-</span>
-                </div>
-                <div class="result-item">
-                    <label>English Summary</label>
-                    <p id="detected-desc" class="ai-desc-text">-</p>
-                </div>
-                <button type="button" onclick="autoFillForm()" class="btn-apply">
-                    <i class="bi bi-magic"></i> Apply to Official Form
-                </button>
-            </div>
-        </div>
-    </div>
-
 <style>
-/* ===== ROOT ===== */
 :root {
-    --green-deep:   #0f3d26;
-    --green-dark:   #1a5c38;
-    --green-mid:    #2d8653;
-    --green-light:  #4caf80;
-    --green-faint:  #eaf4ee;
-    --green-glow:   rgba(45, 134, 83, 0.15);
-    --gold:         #f5c518;
-    --text-main:    #0f2d1c;
-    --text-muted:   #5a7a65;
-    --border:       #d4e8da;
-    --white:        #ffffff;
-    --card-shadow:  0 8px 40px rgba(15, 61, 38, 0.10);
+    --gd:#0f3d26; --gk:#1a5c38; --gm:#2d8653; --gl:#4caf80;
+    --gf:#eaf4ee; --gg:rgba(45,134,83,0.15);
+    --gold:#f5c518; --tm:#0f2d1c; --mu:#5a7a65; --br:#d4e8da; --wh:#ffffff;
+    --cs:0 8px 40px rgba(15,61,38,0.12);
 }
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--gf); font-family:'DM Sans',sans-serif; }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'DM Sans', sans-serif; background: var(--green-faint); }
-
-/* ===== LAYOUT ===== */
-.complaint-page { display: flex; min-height: 100vh; }
-
-/* ===== LEFT PANEL ===== */
-.complaint-left {
-    position: relative;
-    width: 320px;
-    flex-shrink: 0;
-    background: linear-gradient(160deg, var(--green-deep) 0%, var(--green-dark) 55%, var(--green-mid) 100%);
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    padding: 50px 36px;
+.submit-page {
+    min-height:calc(100vh - 68px);
+    padding:2.5rem 1rem 3rem;
+    background:var(--gf);
+    display:flex; flex-direction:column; align-items:center;
 }
-.left-pattern {
-    position: absolute; inset: 0;
-    background-image:
-        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.04) 1px, transparent 1px),
-        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.04) 1px, transparent 1px);
-    background-size: 30px 30px;
+.page-header { text-align:center; margin-bottom:1.8rem; width:100%; max-width:640px; }
+.page-icon {
+    width:60px; height:60px;
+    background:linear-gradient(135deg,var(--gm),var(--gk));
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:1.6rem; margin:0 auto 14px;
+    box-shadow:0 4px 16px rgba(45,134,83,0.3);
 }
-.left-circle { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.04); }
-.left-circle.c1 { width: 260px; height: 260px; bottom: -70px; right: -70px; }
-.left-circle.c2 { width: 140px; height: 140px; top: -40px; right: 20px; }
-.left-content { position: relative; z-index: 2; }
+.page-title { font-family:'Sora',sans-serif; font-size:1.65rem; font-weight:800; color:var(--gd); letter-spacing:-0.3px; margin-bottom:5px; }
+.page-sub { font-size:0.87rem; color:var(--mu); }
+.gold-bar { height:4px; width:48px; background:var(--gold); border-radius:20px; margin:12px auto 0; }
 
-.brand-badge {
-    display: flex; align-items: center; gap: 8px;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 50px; padding: 7px 16px;
-    width: fit-content; margin-bottom: 32px;
-}
-.badge-icon { font-size: 1rem; }
-.badge-text { color: rgba(255,255,255,0.9); font-size: 0.82rem; font-weight: 600; font-family: 'Sora', sans-serif; letter-spacing: 0.5px; }
-
-.left-headline {
-    font-family: 'Sora', sans-serif;
-    font-size: 2.4rem; font-weight: 800;
-    color: #fff; line-height: 1.15;
-    margin-bottom: 18px; letter-spacing: -0.5px;
-}
-.left-sub { color: rgba(255,255,255,0.65); font-size: 0.86rem; line-height: 1.7; margin-bottom: 28px; }
-.left-pills { display: flex; flex-direction: column; gap: 10px; }
-.pill {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.12);
-    color: rgba(255,255,255,0.85);
-    border-radius: 6px; padding: 8px 14px;
-    font-size: 0.78rem; font-weight: 600; letter-spacing: 0.3px; width: fit-content;
-}
-
-/* ===== RIGHT PANEL ===== */
-.complaint-right {
-    flex: 1; overflow-y: auto;
-    padding: 44px 48px;
-    background: var(--green-faint);
-    display: flex; flex-direction: column; gap: 24px;
-}
-
-/* ===== HEADING ===== */
-.heading-row { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
-.heading-icon { font-size: 1.9rem; line-height: 1; }
-.heading-title {
-    font-family: 'Sora', sans-serif; font-size: 1.85rem;
-    font-weight: 800; color: var(--green-deep); letter-spacing: -0.3px;
-}
-.heading-sub { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 16px; padding-left: 2px; }
-.heading-bar { height: 4px; width: 56px; background: var(--gold); border-radius: 20px; }
-
-/* ===== SUCCESS CARD ===== */
 .success-card {
-    display: flex; align-items: flex-start; gap: 16px;
-    background: #f0fdf4;
-    border: 1px solid #bbf7d0;
-    border-left: 5px solid #22c55e;
-    border-radius: 16px; padding: 20px 24px;
-    max-width: 700px;
-    animation: riseIn 0.4s ease-out both;
+    display:flex; align-items:flex-start; gap:14px;
+    background:#f0fdf4; border:1px solid #bbf7d0; border-left:5px solid #22c55e;
+    border-radius:16px; padding:18px 22px;
+    width:100%; max-width:640px; margin-bottom:1.5rem;
+    animation:riseIn 0.4s ease-out both;
 }
-.success-icon { font-size: 2rem; line-height: 1; }
-.success-title { font-family: 'Sora', sans-serif; font-weight: 700; color: #166534; font-size: 1rem; margin-bottom: 4px; }
-.success-sub { font-size: 0.82rem; color: #4b7a57; margin-bottom: 12px; }
-.cid-box {
-    display: flex; align-items: center; gap: 12px;
-    background: #fff; border: 1px solid #bbf7d0;
-    border-radius: 10px; padding: 10px 16px;
-    width: fit-content;
-}
-.cid-code { font-size: 1.1rem; font-weight: 700; color: #1a5c38; letter-spacing: 2px; font-family: monospace; }
-.cid-copy-btn {
-    background: none; border: 1px solid #bbf7d0;
-    border-radius: 7px; padding: 5px 12px;
-    font-size: 0.78rem; color: #166534;
-    cursor: pointer; font-weight: 600;
-    transition: background 0.2s;
-}
-.cid-copy-btn:hover { background: #dcfce7; }
+.success-icon { font-size:2rem; line-height:1; }
+.success-title { font-family:'Sora',sans-serif; font-weight:700; color:#166534; font-size:1rem; margin-bottom:4px; }
+.success-sub { font-size:0.82rem; color:#4b7a57; margin-bottom:12px; }
+.cid-box { display:flex; align-items:center; gap:12px; background:#fff; border:1px solid #bbf7d0; border-radius:10px; padding:10px 16px; width:fit-content; flex-wrap:wrap; }
+.cid-code { font-size:1.1rem; font-weight:700; color:#1a5c38; letter-spacing:2px; font-family:monospace; }
+.cid-copy-btn { background:none; border:1px solid #bbf7d0; border-radius:7px; padding:5px 12px; font-size:0.78rem; color:#166534; cursor:pointer; font-weight:600; transition:background 0.2s; }
+.cid-copy-btn:hover { background:#dcfce7; }
+.cid-track-btn { display:inline-flex; align-items:center; gap:6px; margin-top:12px; background:var(--gm); color:#fff !important; padding:9px 18px; border-radius:8px; font-size:0.82rem; font-weight:700; text-decoration:none; font-family:'Sora',sans-serif; transition:background 0.2s; }
+.cid-track-btn:hover { background:var(--gk); }
 
-/* ===== FORM CARD ===== */
-.form-card {
-    background: var(--white);
-    border-radius: 20px; border: 1px solid var(--border);
-    padding: 36px 38px;
-    box-shadow: var(--card-shadow);
-    max-width: 700px;
-}
+.form-card { background:var(--wh); border-radius:24px; border:1px solid var(--br); padding:40px 44px; box-shadow:var(--cs); width:100%; max-width:640px; }
 
-/* ===== FIELDS ===== */
-.field-group {
-    margin-bottom: 20px;
-    animation: riseIn 0.45s ease-out both;
-    animation-delay: var(--delay, 0s);
-}
-.field-label {
-    display: flex; align-items: center; gap: 6px;
-    font-size: 0.8rem; font-weight: 700;
-    color: var(--green-dark); text-transform: uppercase;
-    letter-spacing: 0.5px; margin-bottom: 8px;
-    font-family: 'Sora', sans-serif;
-}
-.field-input {
-    width: 100%;
-    border: 1.5px solid var(--border);
-    border-radius: 12px; padding: 13px 16px;
-    font-size: 0.92rem; color: var(--text-main);
-    background: #f8fbf9;
-    font-family: 'DM Sans', sans-serif;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-    outline: none; appearance: none; -webkit-appearance: none;
-}
-.field-input::placeholder { color: #a0b8a8; }
-.field-input:focus {
-    border-color: var(--green-mid); background: #fff;
-    box-shadow: 0 0 0 4px var(--green-glow);
-}
-.field-select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232d8653' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat; background-position: right 16px center;
-    padding-right: 40px; cursor: pointer;
-}
-.field-textarea { resize: vertical; min-height: 110px; }
+.field-group { margin-bottom:20px; animation:riseIn 0.45s ease-out both; animation-delay:var(--delay,0s); }
+.field-label { display:flex; align-items:center; gap:6px; font-size:0.75rem; font-weight:700; color:var(--gk); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; font-family:'Sora',sans-serif; }
+.field-input { width:100%; border:1.5px solid var(--br); border-radius:12px; padding:12px 15px; font-size:0.92rem; color:var(--tm); background:#f8fbf9; font-family:'DM Sans',sans-serif; outline:none; transition:border-color 0.2s,box-shadow 0.2s,background 0.2s; appearance:none; -webkit-appearance:none; }
+.field-input::placeholder { color:#a0b8a8; }
+.field-input:focus { border-color:var(--gm); background:#fff; box-shadow:0 0 0 4px var(--gg); }
+.field-select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232d8653' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 16px center; padding-right:40px; cursor:pointer; }
+.field-textarea { resize:vertical; min-height:110px; }
 
-/* ===== DROPZONE ===== */
-#dropzone {
-    border: 2px dashed var(--border);
-    border-radius: 14px; padding: 30px 20px;
-    text-align: center; cursor: pointer;
-    background: #f8fbf9;
-    transition: all 0.25s ease;
-}
-#dropzone:hover { border-color: var(--green-mid); background: #f0f8f3; }
-.drop-icon { font-size: 2.4rem; margin-bottom: 10px; }
-.drop-title { font-weight: 700; color: var(--text-main); font-size: 0.92rem; font-family: 'Sora', sans-serif; }
-.drop-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 5px; }
-#img-preview {
-    display: none; max-height: 200px; border-radius: 10px;
-    margin: 10px auto 0; border: 3px solid var(--border);
-}
+#dropzone { border:2px dashed var(--br); border-radius:14px; padding:28px 20px; text-align:center; cursor:pointer; background:#f8fbf9; transition:all 0.25s ease; }
+#dropzone:hover { border-color:var(--gm); background:#f0f8f3; }
+.drop-icon { font-size:2.2rem; margin-bottom:8px; }
+.drop-title { font-weight:700; color:var(--tm); font-size:0.9rem; font-family:'Sora',sans-serif; }
+.drop-hint { font-size:0.74rem; color:var(--mu); margin-top:4px; }
+#img-preview { display:none; max-height:200px; border-radius:10px; margin:10px auto 0; border:3px solid var(--br); }
 
-/* ===== ADDRESS ===== */
-.address-wrapper {
-    position: relative; margin-bottom: 10px;
-}
-.address-icon {
-    position: absolute; left: 14px; top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-muted); font-size: 0.95rem; pointer-events: none;
-}
-.address-input { padding-left: 40px !important; }
+.address-wrapper { position:relative; margin-bottom:10px; }
+.address-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--mu); font-size:0.95rem; pointer-events:none; }
+.address-input { padding-left:40px !important; }
 
-/* ===== GPS BUTTON ===== */
-.gps-btn {
-    width: 100%; background: var(--green-faint);
-    color: var(--green-dark); border: 1.5px solid var(--border);
-    border-radius: 12px; padding: 13px 16px;
-    font-family: 'Sora', sans-serif; font-size: 0.85rem;
-    font-weight: 700; cursor: pointer; letter-spacing: 0.3px;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    transition: all 0.25s ease;
-}
-.gps-btn:hover { background: #dcf5e7; border-color: var(--green-mid); color: var(--green-deep); }
-.gps-status { text-align: center; margin-top: 8px; font-size: 0.78rem; color: var(--text-muted); min-height: 18px; }
+.gps-btn { width:100%; background:var(--gf); color:var(--gk); border:1.5px solid var(--br); border-radius:12px; padding:12px 16px; font-family:'Sora',sans-serif; font-size:0.85rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.25s ease; }
+.gps-btn:hover { background:#dcf5e7; border-color:var(--gm); color:var(--gd); }
+.gps-status { text-align:center; margin-top:8px; font-size:0.78rem; color:var(--mu); min-height:18px; }
 
-/* ===== SUBMIT ===== */
-.btn-submit {
-    width: 100%;
-    background: linear-gradient(135deg, var(--green-mid) 0%, var(--green-dark) 100%);
-    color: #fff; border: none; border-radius: 12px;
-    padding: 15px 20px;
-    font-family: 'Sora', sans-serif; font-size: 0.88rem;
-    font-weight: 700; letter-spacing: 0.8px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    transition: all 0.25s ease;
-    box-shadow: 0 4px 18px rgba(26, 92, 56, 0.3);
-}
-.btn-submit:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(26, 92, 56, 0.38);
-    background: linear-gradient(135deg, var(--green-light) 0%, var(--green-mid) 100%);
-}
-.btn-submit:active { transform: translateY(0); }
+.btn-submit { width:100%; background:linear-gradient(135deg,var(--gm) 0%,var(--gk) 100%); color:#fff; border:none; border-radius:12px; padding:14px; font-family:'Sora',sans-serif; font-size:0.88rem; font-weight:700; letter-spacing:0.8px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; transition:all 0.25s ease; box-shadow:0 4px 18px rgba(26,92,56,0.3); margin-top:6px; }
+.btn-submit:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(26,92,56,0.38); background:linear-gradient(135deg,var(--gl) 0%,var(--gm) 100%); }
 
-/* ===== ANIMATION ===== */
-@keyframes riseIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes rotate { 100% { transform: rotate(360deg); } }
-.spin { animation: rotate 1.5s linear infinite; }
+/* AI */
+#ai-assistant-btn { position:fixed; bottom:28px; right:28px; width:72px; height:72px; background:linear-gradient(135deg,var(--gm),var(--gd)); border-radius:50%; color:white; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; z-index:2000; box-shadow:0 8px 24px rgba(15,61,38,0.3); border:2px solid rgba(255,255,255,0.2); transition:all 0.3s ease; }
+#ai-assistant-btn:hover { transform:scale(1.06) rotate(5deg); }
+.ai-icon { font-size:1.6rem; line-height:1; }
+#ai-assistant-btn small { font-size:0.58rem; font-weight:700; margin-top:2px; }
+.ai-card { position:fixed; bottom:112px; right:28px; width:320px; background:white; border-radius:20px; display:none; z-index:2001; overflow:hidden; box-shadow:var(--cs); border:1px solid var(--br); animation:riseIn 0.3s ease-out; }
+.ai-header { background:var(--gd); color:white; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; }
+.ai-header-title { display:flex; align-items:center; gap:8px; }
+.ai-header-title h6 { margin:0; font-family:'Sora',sans-serif; font-size:0.88rem; font-weight:700; }
+.dot-online { width:8px; height:8px; background:#22c55e; border-radius:50%; box-shadow:0 0 8px #22c55e; }
+.btn-close-custom { background:none; border:none; color:white; font-size:1.1rem; cursor:pointer; opacity:0.7; }
+.ai-body { padding:18px; text-align:center; }
+.mode-selector { display:flex; gap:8px; margin-bottom:14px; }
+.mode-btn { flex:1; padding:9px 10px; border:1.5px solid var(--br); background:white; border-radius:8px; font-size:0.74rem; font-weight:700; color:var(--mu); cursor:pointer; transition:all 0.2s; }
+.mode-btn.active { background:var(--gm); color:white; border-color:var(--gm); }
+.ai-section { display:none; }
+.ai-section.active { display:block; }
+.ai-instruction { font-size:0.79rem; color:var(--mu); line-height:1.5; margin-bottom:14px; }
+.mic-section { display:flex; flex-direction:column; align-items:center; gap:10px; margin-bottom:14px; }
+.btn-mic { width:68px; height:68px; border-radius:50%; border:none; background:#ef4444; color:white; font-size:1.7rem; cursor:pointer; position:relative; z-index:5; transition:0.3s; }
+.btn-mic.recording { background:#b91c1c; }
+.pulse-ring { position:absolute; width:68px; height:68px; border-radius:50%; background:rgba(239,68,68,0.4); display:none; }
+.recording .pulse-ring { display:block; animation:pulse 1.5s infinite; }
+.image-upload-zone { border:2px dashed var(--br); border-radius:12px; padding:22px 14px; text-align:center; cursor:pointer; background:#f8fbf9; transition:all 0.25s; margin-bottom:14px; }
+.image-upload-zone:hover { border-color:var(--gm); background:#f0f8f3; }
+.upload-placeholder { display:flex; flex-direction:column; align-items:center; }
+.upload-icon { font-size:1.8rem; margin-bottom:7px; }
+.upload-title { font-weight:700; color:var(--tm); font-size:0.82rem; margin-bottom:3px; }
+.upload-hint { font-size:0.68rem; color:var(--mu); }
+.ai-result-view { text-align:left; background:var(--gf); padding:12px; border-radius:10px; border:1px solid var(--br); }
+.result-item { margin-bottom:10px; }
+.result-item label { display:block; font-size:0.6rem; font-weight:800; color:var(--gk); text-transform:uppercase; margin-bottom:3px; }
+.ai-badge { display:inline-block; background:var(--gm); color:white; padding:3px 10px; border-radius:50px; font-size:0.7rem; font-weight:700; }
+.ai-desc-text { font-size:0.74rem; color:var(--tm); margin:0; line-height:1.4; font-style:italic; }
+.btn-apply { width:100%; margin-top:10px; padding:9px; border:none; background:var(--gd); color:white; border-radius:8px; font-weight:700; font-size:0.74rem; cursor:pointer; transition:0.2s; }
+.btn-apply:hover { background:var(--gm); }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 900px) {
-    .complaint-left { display: none; }
-    .complaint-right { padding: 28px 20px; }
-    .form-card { padding: 24px 18px; }
-}
+@keyframes riseIn { from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);} }
+@keyframes rotate { 100%{transform:rotate(360deg);} }
+@keyframes pulse { 0%{transform:scale(1);opacity:1;}100%{transform:scale(2);opacity:0;} }
+.spin { animation:rotate 1.5s linear infinite; }
 
-.cid-track-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 14px;
-    background: var(--green-mid);
-    color: #fff !important;
-    padding: 9px 18px;
-    border-radius: 8px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    text-decoration: none;
-    font-family: 'Sora', sans-serif;
-    transition: background 0.2s;
-}
-.cid-track-btn:hover { background: var(--green-dark); }
-
-/* ===== AI ASSISTANT THEME ===== */
-#ai-assistant-btn {
-    position: fixed; bottom: 30px; right: 30px;
-    width: 75px; height: 75px; 
-    background: linear-gradient(135deg, var(--green-mid), var(--green-deep));
-    border-radius: 50%; color: white; display: flex;
-    flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; z-index: 2000; box-shadow: 0 10px 25px rgba(15, 61, 38, 0.3);
-    border: 2px solid rgba(255,255,255,0.2); transition: all 0.3s ease;
-}
-#ai-assistant-btn:hover { transform: scale(1.05) rotate(5deg); }
-
-.ai-card {
-    position: fixed; bottom: 115px; right: 30px;
-    width: 320px; background: white; border-radius: 20px;
-    display: none; z-index: 2001; overflow: hidden;
-    box-shadow: var(--card-shadow); border: 1px solid var(--border);
-    animation: riseIn 0.3s ease-out;
-}
-
-.ai-header { 
-    background: var(--green-deep); color: white; padding: 15px 20px; 
-    display: flex; justify-content: space-between; align-items: center;
-}
-.ai-header-title { display: flex; align-items: center; gap: 8px; }
-.ai-header-title h6 { margin: 0; font-family: 'Sora', sans-serif; font-size: 0.9rem; font-weight: 700; }
-.dot-online { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 8px #22c55e; }
-.btn-close-custom { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; opacity: 0.7; }
-
-.ai-body { padding: 20px; text-align: center; }
-
-/* ===== MODE SELECTOR ===== */
-.mode-selector {
-    display: flex; gap: 8px; margin-bottom: 16px;
-}
-.mode-btn {
-    flex: 1; padding: 10px 12px; border: 1.5px solid var(--border);
-    background: white; border-radius: 8px; font-size: 0.75rem;
-    font-weight: 700; color: var(--text-muted); cursor: pointer;
-    transition: all 0.2s ease;
-}
-.mode-btn:hover { border-color: var(--green-mid); color: var(--green-mid); }
-.mode-btn.active {
-    background: var(--green-mid); color: white; border-color: var(--green-mid);
-}
-
-.ai-section { display: none; }
-.ai-section.active { display: block; }
-
-.ai-instruction { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px; }
-
-/* ===== VOICE SECTION ===== */
-.mic-section { position: relative; display: flex; flex-direction: column; align-items: center; margin-bottom: 16px; gap: 10px; }
-.btn-mic {
-    width: 70px; height: 70px; border-radius: 50%; border: none;
-    background: #ef4444; color: white; font-size: 1.8rem;
-    cursor: pointer; position: relative; z-index: 5; transition: 0.3s;
-}
-.btn-mic.recording { background: #b91c1c; }
-.pulse-ring {
-    position: absolute; width: 70px; height: 70px; border-radius: 50%;
-    background: rgba(239, 68, 68, 0.4); display: none;
-}
-.recording .pulse-ring { display: block; animation: pulse 1.5s infinite; }
-
-/* ===== IMAGE SECTION ===== */
-.image-upload-zone {
-    border: 2px dashed var(--border);
-    border-radius: 12px; padding: 25px 15px;
-    text-align: center; cursor: pointer;
-    background: #f8fbf9;
-    transition: all 0.25s ease;
-    margin-bottom: 16px;
-}
-.image-upload-zone:hover { border-color: var(--green-mid); background: #f0f8f3; }
-.upload-placeholder { display: flex; flex-direction: column; align-items: center; }
-.upload-icon { font-size: 2rem; margin-bottom: 8px; }
-.upload-title { font-weight: 700; color: var(--text-main); font-size: 0.85rem; margin-bottom: 4px; }
-.upload-hint { font-size: 0.7rem; color: var(--text-muted); }
-
-/* ===== RESULTS ===== */
-.ai-result-view { text-align: left; background: var(--green-faint); padding: 14px; border-radius: 10px; border: 1px solid var(--border); }
-.result-item { margin-bottom: 12px; }
-.result-item label { display: block; font-size: 0.6rem; font-weight: 800; color: var(--green-dark); text-transform: uppercase; margin-bottom: 4px; }
-.ai-badge { display: inline-block; background: var(--green-mid); color: white; padding: 4px 10px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; }
-.ai-desc-text { font-size: 0.75rem; color: var(--text-main); margin: 0; line-height: 1.3; font-style: italic; }
-
-.btn-apply {
-    width: 100%; margin-top: 12px; padding: 9px; border: none;
-    background: var(--green-deep); color: white; border-radius: 8px;
-    font-weight: 700; font-size: 0.75rem; cursor: pointer; transition: 0.2s;
-}
-.btn-apply:hover { background: var(--green-mid); }
-
-@keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
-
+@media(max-width:520px){ .form-card{padding:26px 20px;border-radius:18px;} .page-title{font-size:1.4rem;} }
+@media(max-width:380px){ .form-card{padding:20px 14px;} .ai-card{width:calc(100vw - 24px);right:12px;} #ai-assistant-btn{bottom:16px;right:16px;} }
 </style>
+{% endblock %}
 
+{% block content %}
+<meta http-equiv="Cache-Control" content="no-store">
+<div class="submit-page">
+
+    <div class="page-header">
+        <div class="page-icon">📝</div>
+        <div class="page-title">Submit a Complaint</div>
+        <div class="page-sub">Provide issue details and we'll route it to the right department</div>
+        <div class="gold-bar"></div>
+    </div>
+
+    {% if success_cid %}
+    <div class="success-card">
+        <div class="success-icon">✅</div>
+        <div>
+            <h5 class="success-title">Complaint Registered Successfully!</h5>
+            <p class="success-sub">Save your Complaint ID below. You'll need it to track your complaint.</p>
+            <div class="cid-box">
+                <code id="cmpId" class="cid-code">{{ success_cid }}</code>
+                <button type="button" class="cid-copy-btn" onclick="copyCid()"><i class="bi bi-clipboard"></i> Copy ID</button>
+            </div>
+            <a href="/track" class="cid-track-btn"><i class="bi bi-search"></i> Go to Track Page</a>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="form-card">
+        <form method="post" enctype="multipart/form-data">
+
+            <div class="field-group" style="--delay:0.04s">
+                <label class="field-label"><i class="bi bi-person-fill"></i> Full Name</label>
+                <input class="field-input" name="name" placeholder="Enter your full name" required>
+            </div>
+
+            <div class="field-group" style="--delay:0.08s">
+                <label class="field-label"><i class="bi bi-phone-fill"></i> Mobile Number</label>
+                <input type="tel" class="field-input" name="mobile" placeholder="+91 XXXXX XXXXX" required>
+            </div>
+
+            <div class="field-group" style="--delay:0.12s">
+                <label class="field-label"><i class="bi bi-tag-fill"></i> Complaint Category</label>
+                <select class="field-input field-select" name="category" id="categorySelect" required>
+                    <option value="" disabled selected>Select a category</option>
+                    <option value="Garbage">🗑️ Garbage Collection</option>
+                    <option value="Road Damage">🚧 Road Damage</option>
+                    <option value="Streetlight">💡 Streetlight Issue</option>
+                    <option value="Water Supply">💧 Water Supply</option>
+                    <option value="Drainage">🌊 Drainage Problem</option>
+                    <option value="Mosquito">🦟 Mosquito Menace</option>
+                    <option value="Construction">🏗️ Illegal Construction</option>
+                    <option value="Encroachment">🏪 Footpath Encroachment</option>
+                    <option value="Hoardings">🖼️ Unauthorized Hoardings</option>
+                    <option value="Buildings">🏚️ Dangerous Buildings</option>
+                    <option value="Tree Cutting">🪓 Illegal Tree Cutting</option>
+                    <option value="Garden">🎡 Garden Maintenance</option>
+                    <option value="air Pollution">💨 Air Pollution</option>
+                    <option value="Dead Animal">🐕 Dead Animal Removal</option>
+                    <option value="Toilet">🚻 Public Toilet Issues</option>
+                    <option value="Food Safety">🍲 Food Safety</option>
+                    <option value="Stray Cattle">🐄 Stray Cattle</option>
+                    <option value="Noise Pollution">📢 Noise Pollution</option>
+                    <option value="Manhole">🕳️ Missing Manhole Covers</option>
+                    <option value="Dog">🐕‍🦺 Stray Dog Menace</option>
+                    <option value="Tax">💳 Property Tax Issues</option>
+                    <option value="Fire">🔥 Fire Safety</option>
+                    <option value="other">❓ Other</option>
+                </select>
+            </div>
+
+            <div class="field-group" style="--delay:0.16s">
+                <label class="field-label"><i class="bi bi-chat-text-fill"></i> Complaint Description</label>
+                <textarea class="field-input field-textarea" name="description" id="descriptionText" rows="4"
+                          placeholder="Describe the issue in detail (location specifics, intensity, duration, etc.)" required></textarea>
+            </div>
+
+            <div class="field-group" style="--delay:0.2s">
+                <label class="field-label"><i class="bi bi-camera-fill"></i> Photo Evidence</label>
+                <div id="dropzone" onclick="document.getElementById('imgInput').click()">
+                    <div id="drop-placeholder">
+                        <div class="drop-icon">📸</div>
+                        <div class="drop-title">Click or Drag Photo Here</div>
+                        <div class="drop-hint">JPG, PNG, WEBP up to 5MB</div>
+                    </div>
+                    <img id="img-preview" src="" alt="Preview">
+                </div>
+                <input type="file" name="image" id="imgInput" accept="image/*" capture="camera" style="display:none" onchange="previewImage(event)">
+            </div>
+
+            <div class="field-group" style="--delay:0.24s">
+                <label class="field-label"><i class="bi bi-geo-alt-fill"></i> Incident Location</label>
+                <input type="hidden" name="latitude" id="lat-input">
+                <input type="hidden" name="longitude" id="lng-input">
+                <div class="address-wrapper">
+                    <span class="address-icon"><i class="bi bi-map"></i></span>
+                    <input class="field-input address-input" name="address" id="address-input" placeholder="Enter address or landmark manually...">
+                </div>
+                <button type="button" onclick="getLocation()" id="gps-btn" class="gps-btn">
+                    <i class="bi bi-crosshair2"></i> Auto-Detect My Location (GPS)
+                </button>
+                <div id="gps-status" class="gps-status"></div>
+            </div>
+
+            <div class="field-group" style="--delay:0.28s">
+                <button type="submit" class="btn-submit"><i class="bi bi-send-fill"></i> FILE OFFICIAL COMPLAINT</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<!-- AI BUTTON -->
+<div id="ai-assistant-btn" onclick="toggleAIPanel()" title="AI Voice &amp; Image Assistant">
+    <span class="ai-icon">🤖</span><small>AI Help</small>
+</div>
+
+<!-- AI PANEL -->
+<div id="ai-panel" class="ai-card">
+    <div class="ai-header">
+        <div class="ai-header-title"><span class="dot-online"></span><h6>AI Complaint Assistant</h6></div>
+        <button onclick="toggleAIPanel()" class="btn-close-custom">✕</button>
+    </div>
+    <div class="ai-body">
+        <div class="mode-selector">
+            <button type="button" class="mode-btn active" onclick="switchMode('voice')" id="voice-mode-btn"><i class="bi bi-mic-fill"></i> Voice</button>
+            <button type="button" class="mode-btn" onclick="switchMode('image')" id="image-mode-btn"><i class="bi bi-image-fill"></i> Image</button>
+        </div>
+        <div id="voice-section" class="ai-section active">
+            <p id="ai-status" class="ai-instruction">Click the mic and describe the issue in Marathi, Hindi, or English.</p>
+            <div class="mic-section">
+                <button id="start-record" type="button" class="btn-mic"><i class="bi bi-mic-fill"></i><div class="pulse-ring"></div></button>
+                <audio id="audio-preview" controls style="display:none;width:100%;margin-top:10px;"></audio>
+                <button id="generate-audio-btn" style="display:none;" class="btn-apply">Generate Complaint</button>
+            </div>
+        </div>
+        <div id="image-section" class="ai-section">
+            <p class="ai-instruction" id="image-status">Upload a photo of the issue for AI analysis.</p>
+            <div id="image-upload-zone" class="image-upload-zone" onclick="document.getElementById('aiImageInput').click()">
+                <div class="upload-placeholder"><div class="upload-icon">📷</div><div class="upload-title">Click or Drag Image Here</div><div class="upload-hint">JPG, PNG, WEBP</div></div>
+                <img id="ai-image-preview" src="" alt="Preview" style="display:none;max-height:180px;border-radius:10px;">
+            </div>
+            <button id="generate-image-btn" style="display:none;" class="btn-apply">Generate Complaint</button>
+            <input type="file" id="aiImageInput" accept="image/*" style="display:none" onchange="handleAIImageUpload(event)">
+        </div>
+        <div id="ai-result" style="display:none;" class="ai-result-view">
+            <div class="result-item"><label>Detected Category</label><span id="detected-cat" class="ai-badge">-</span></div>
+            <div class="result-item"><label>English Summary</label><p id="detected-desc" class="ai-desc-text">-</p></div>
+            <button type="button" onclick="autoFillForm()" class="btn-apply"><i class="bi bi-magic"></i> Apply to Official Form</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-
-// ===== COPY COMPLAINT ID — shows ✔ tick on button after copy =====
-window.copyCid = function() {
-    const cidText = document.getElementById("cmpId").innerText;
-    const btn = document.querySelector(".cid-copy-btn");
- 
-    navigator.clipboard.writeText(cidText).then(() => {
-        // Show tick
-        btn.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
-        btn.style.background = '#dcfce7';
-        btn.style.color = '#166534';
-        btn.style.borderColor = '#86efac';
- 
-        // Revert after 2 seconds
-        setTimeout(() => {
-            btn.innerHTML = '<i class="bi bi-clipboard"></i> Copy ID';
-            btn.style.background = '';
-            btn.style.color = '';
-            btn.style.borderColor = '';
-        }, 2000);
-    });
-};
-
-// ===== IMAGE PREVIEW (main form) =====
-window.previewImage = function(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const preview = document.getElementById('img-preview');
-        const placeholder = document.getElementById('drop-placeholder');
-        preview.src = e.target.result;
-        preview.style.display = 'block';
-        if (placeholder) placeholder.style.display = 'none';
-    };
-    reader.readAsDataURL(file);
-};
-
-// ===== GPS LOCATION with Reverse Geocoding =====
-window.getLocation = function() {
-    const status  = document.getElementById('gps-status');
-    const btn     = document.getElementById('gps-btn');
-    const addrBox = document.getElementById('address-input');
-
-    if (!navigator.geolocation) {
-        status.innerText = "GPS not supported by your browser.";
-        return;
-    }
-
-    btn.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i> Detecting...';
-    btn.disabled  = true;
-    status.innerText = "Fetching your location...";
-
-    navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-
-            document.getElementById('lat-input').value = lat;
-            document.getElementById('lng-input').value = lng;
-
-            // Reverse geocode using OpenStreetMap Nominatim (free, no key needed)
-            try {
-                status.innerText = "📍 Coordinates found. Fetching address...";
-                const res  = await fetch(
-                    `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
-                    { headers: { "Accept-Language": "en" } }
-                );
-                const geo  = await res.json();
-                const addr = geo.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-                addrBox.value    = addr;
-                status.innerText = "✅ Location & address filled automatically.";
-            } catch (e) {
-                // Fallback: just fill coordinates if geocoding fails
-                addrBox.value    = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-                status.innerText = "✅ Location captured (address lookup failed, coordinates used).";
-            }
-
-            btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Location Detected';
-            btn.disabled  = false;
-        },
-        (err) => {
-            const msgs = {
-                1: "Permission denied. Please allow location access.",
-                2: "Position unavailable. Try again or enter manually.",
-                3: "Location request timed out. Try again.",
-            };
-            status.innerText = msgs[err.code] || "Could not detect location.";
-            btn.innerHTML = '<i class="bi bi-crosshair2"></i> Auto-Detect My Location (GPS)';
-            btn.disabled  = false;
-        },
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }    );
-};
-
-// ===== GLOBAL STATE =====
-let mediaRecorder;
-let audioChunks = [];
-let recordedAudioBlob = null;
-let selectedImageFile = null;
-let currentMode = 'voice';
-
-// ===== PANEL TOGGLE =====
-window.toggleAIPanel = function () {
-    const panel = document.getElementById('ai-panel');
-    panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
-};
-
-// ===== MODE SWITCH =====
-window.switchMode = function(mode) {
-    currentMode = mode;
-
-    document.getElementById('voice-mode-btn').classList.toggle('active', mode === 'voice');
-    document.getElementById('image-mode-btn').classList.toggle('active', mode === 'image');
-
-    document.getElementById('voice-section').classList.toggle('active', mode === 'voice');
-    document.getElementById('image-section').classList.toggle('active', mode === 'image');
-
-    // Reset UI when switching
-    document.getElementById('ai-result').style.display = 'none';
-    document.getElementById('audio-preview').style.display = 'none';
-    document.getElementById('generate-audio-btn').style.display = 'none';
-    document.getElementById('generate-image-btn').style.display = 'none';
-};
-
-// ===== VOICE RECORDING =====
-document.getElementById('start-record').onclick = async function () {
-    const btn = this;
-
-    if (btn.classList.contains('recording')) {
-        mediaRecorder.stop();
-        btn.classList.remove('recording');
-        btn.innerHTML = '<i class="bi bi-mic-fill"></i><div class="pulse-ring"></div>';
-        return;
-    }
-
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
-        audioChunks = [];
-
-        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-
-        mediaRecorder.onstop = () => {
-            // FIX: Use audio/webm which browsers actually record in
-            recordedAudioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
-
-            const audioURL = URL.createObjectURL(recordedAudioBlob);
-            const audioPreview = document.getElementById('audio-preview');
-            audioPreview.src = audioURL;
-            audioPreview.style.display = 'block';
-
-            document.getElementById('generate-audio-btn').style.display = 'block';
-            document.getElementById('ai-status').innerText = "Recording saved. Click 'Generate Complaint' to analyze.";
-        };
-
-        mediaRecorder.start();
-        btn.classList.add('recording');
-        btn.innerHTML = '<i class="bi bi-stop-fill"></i><div class="pulse-ring"></div>';
-        document.getElementById('ai-status').innerText = "Recording... Click again to stop.";
-
-    } catch (err) {
-        document.getElementById('ai-status').innerText = "Microphone permission required.";
-    }
-};
-
-// ===== GENERATE FROM AUDIO =====
-document.getElementById('generate-audio-btn').onclick = async function () {
-    if (!recordedAudioBlob) return;
-
-    const status = document.getElementById('ai-status');
-    const btn = this;
-    status.innerText = "Analyzing voice... please wait.";
-    btn.disabled = true;
-    btn.innerText = "Analyzing...";
-
-    let formData = new FormData();
-    // Send with correct mime type so backend can determine extension
-    formData.append('audio', recordedAudioBlob, 'recording.webm');
-
-    try {
-        const res = await fetch('/analyse-complaint', {
-            method: 'POST',
-            body: formData
-        });
-
-        const data = await res.json();
-
-        if (data.error) throw new Error(data.error);
-
-        document.getElementById('ai-result').style.display = 'block';
-        document.getElementById('detected-cat').innerText = data.category;
-        document.getElementById('detected-desc').innerText = data.description;
-
-        status.innerText = "✅ Analysis complete! Review below.";
-
-    } catch (err) {
-        status.innerText = "❌ Error: " + err.message;
-        console.error(err);
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "Generate Complaint";
-    }
-};
-
-// ===== IMAGE UPLOAD (AI panel) =====
-window.handleAIImageUpload = function(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    selectedImageFile = file;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const preview = document.getElementById('ai-image-preview');
-        const placeholder = document.querySelector('#image-upload-zone .upload-placeholder');
-        preview.src = e.target.result;
-        preview.style.display = 'block';
-        if (placeholder) placeholder.style.display = 'none';
-    };
-    reader.readAsDataURL(file);
-
-    document.getElementById('generate-image-btn').style.display = 'block';
-};
-
-// ===== GENERATE FROM IMAGE =====
-document.getElementById('generate-image-btn').onclick = async function () {
-    if (!selectedImageFile) return;
-
-    const status = document.getElementById('image-status');
-    const btn = this;
-    status.innerText = "Analyzing image... please wait.";
-    btn.disabled = true;
-    btn.innerText = "Analyzing...";
-
-    let formData = new FormData();
-    formData.append('image', selectedImageFile);
-
-    try {
-        const res = await fetch('/analyse-complaint', {
-            method: 'POST',
-            body: formData
-        });
-
-        const data = await res.json();
-
-        if (data.error) throw new Error(data.error);
-
-        document.getElementById('ai-result').style.display = 'block';
-        document.getElementById('detected-cat').innerText = data.category;
-        document.getElementById('detected-desc').innerText = data.description;
-
-        status.innerText = "✅ Analysis complete! Review below.";
-
-    } catch (err) {
-        status.innerText = "❌ Error: " + err.message;
-        console.error(err);
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "Generate Complaint";
-    }
-};
-
-// ===== AUTOFILL — FIX: case-insensitive category match =====
-window.autoFillForm = function() {
-    const categorySelect = document.getElementById('categorySelect');
-    const descriptionText = document.getElementById('descriptionText');
-
-    const catValue = document.getElementById('detected-cat').innerText.trim();
-    const descValue = document.getElementById('detected-desc').innerText.trim();
-
-    // Case-insensitive match against all <option> values
-    if (categorySelect && catValue) {
-        const options = Array.from(categorySelect.options);
-        const match = options.find(
-            o => o.value.toLowerCase() === catValue.toLowerCase()
-        );
-        if (match) {
-            categorySelect.value = match.value;
-        } else {
-            // If no exact match, default to "other"
-            categorySelect.value = "other";
-        }
-    }
-
-    if (descriptionText && descValue) {
-        descriptionText.value = descValue;
-    }
-
-    toggleAIPanel();
-
-    // Scroll to form
-    const formTop = document.querySelector('.form-card');
-    if (formTop) formTop.scrollIntoView({ behavior: 'smooth', block: 'start' });
-};
-
+document.addEventListener("DOMContentLoaded",()=>{
+window.copyCid=function(){const t=document.getElementById("cmpId").innerText,b=document.querySelector(".cid-copy-btn");navigator.clipboard.writeText(t).then(()=>{b.innerHTML='<i class="bi bi-check-lg"></i> Copied!';b.style.background='#dcfce7';b.style.color='#166534';b.style.borderColor='#86efac';setTimeout(()=>{b.innerHTML='<i class="bi bi-clipboard"></i> Copy ID';b.style.background=b.style.color=b.style.borderColor='';},2000);});};
+window.previewImage=function(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=(e)=>{const p=document.getElementById('img-preview'),pl=document.getElementById('drop-placeholder');p.src=e.target.result;p.style.display='block';if(pl)pl.style.display='none';};r.readAsDataURL(f);};
+window.getLocation=function(){const s=document.getElementById('gps-status'),b=document.getElementById('gps-btn'),a=document.getElementById('address-input');if(!navigator.geolocation){s.innerText="GPS not supported.";return;}b.innerHTML='<i class="bi bi-arrow-clockwise spin"></i> Detecting...';b.disabled=true;s.innerText="Fetching your location...";navigator.geolocation.getCurrentPosition(async(pos)=>{const lat=pos.coords.latitude,lng=pos.coords.longitude;document.getElementById('lat-input').value=lat;document.getElementById('lng-input').value=lng;try{s.innerText="📍 Coordinates found. Fetching address...";const res=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,{headers:{"Accept-Language":"en"}});const geo=await res.json();a.value=geo.display_name||`${lat.toFixed(5)},${lng.toFixed(5)}`;s.innerText="✅ Location & address filled automatically.";}catch(e){a.value=`${lat.toFixed(5)},${lng.toFixed(5)}`;s.innerText="✅ Location captured.";}b.innerHTML='<i class="bi bi-check-circle-fill"></i> Location Detected';b.disabled=false;},(err)=>{const m={1:"Permission denied.",2:"Position unavailable.",3:"Timed out."};s.innerText=m[err.code]||"Could not detect location.";b.innerHTML='<i class="bi bi-crosshair2"></i> Auto-Detect My Location (GPS)';b.disabled=false;},{enableHighAccuracy:true,timeout:15000,maximumAge:0});};
+let mediaRecorder,audioChunks=[],recordedAudioBlob=null,selectedImageFile=null;
+window.toggleAIPanel=function(){const p=document.getElementById('ai-panel');p.style.display=(p.style.display==='block')?'none':'block';};
+window.switchMode=function(m){['voice','image'].forEach(x=>{document.getElementById(x+'-mode-btn').classList.toggle('active',x===m);document.getElementById(x+'-section').classList.toggle('active',x===m);});document.getElementById('ai-result').style.display='none';document.getElementById('audio-preview').style.display='none';document.getElementById('generate-audio-btn').style.display='none';document.getElementById('generate-image-btn').style.display='none';};
+document.getElementById('start-record').onclick=async function(){const b=this;if(b.classList.contains('recording')){mediaRecorder.stop();b.classList.remove('recording');b.innerHTML='<i class="bi bi-mic-fill"></i><div class="pulse-ring"></div>';return;}try{const s=await navigator.mediaDevices.getUserMedia({audio:true});mediaRecorder=new MediaRecorder(s);audioChunks=[];mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);mediaRecorder.onstop=()=>{recordedAudioBlob=new Blob(audioChunks,{type:mediaRecorder.mimeType||'audio/webm'});const u=URL.createObjectURL(recordedAudioBlob),ap=document.getElementById('audio-preview');ap.src=u;ap.style.display='block';document.getElementById('generate-audio-btn').style.display='block';document.getElementById('ai-status').innerText="Recording saved. Click 'Generate Complaint'.";};mediaRecorder.start();b.classList.add('recording');b.innerHTML='<i class="bi bi-stop-fill"></i><div class="pulse-ring"></div>';document.getElementById('ai-status').innerText="Recording... Click again to stop.";}catch(e){document.getElementById('ai-status').innerText="Microphone permission required.";}};
+document.getElementById('generate-audio-btn').onclick=async function(){if(!recordedAudioBlob)return;const s=document.getElementById('ai-status'),b=this;s.innerText="Analyzing voice...";b.disabled=true;b.innerText="Analyzing...";const fd=new FormData();fd.append('audio',recordedAudioBlob,'recording.webm');try{const r=await fetch('/analyse-complaint',{method:'POST',body:fd}),d=await r.json();if(d.error)throw new Error(d.error);document.getElementById('ai-result').style.display='block';document.getElementById('detected-cat').innerText=d.category;document.getElementById('detected-desc').innerText=d.description;s.innerText="✅ Analysis complete!";}catch(e){s.innerText="❌ Error: "+e.message;}finally{b.disabled=false;b.innerText="Generate Complaint";}};
+window.handleAIImageUpload=function(e){const f=e.target.files[0];if(!f)return;selectedImageFile=f;const r=new FileReader();r.onload=(e)=>{const p=document.getElementById('ai-image-preview'),pl=document.querySelector('#image-upload-zone .upload-placeholder');p.src=e.target.result;p.style.display='block';if(pl)pl.style.display='none';};r.readAsDataURL(f);document.getElementById('generate-image-btn').style.display='block';};
+document.getElementById('generate-image-btn').onclick=async function(){if(!selectedImageFile)return;const s=document.getElementById('image-status'),b=this;s.innerText="Analyzing image...";b.disabled=true;b.innerText="Analyzing...";const fd=new FormData();fd.append('image',selectedImageFile);try{const r=await fetch('/analyse-complaint',{method:'POST',body:fd}),d=await r.json();if(d.error)throw new Error(d.error);document.getElementById('ai-result').style.display='block';document.getElementById('detected-cat').innerText=d.category;document.getElementById('detected-desc').innerText=d.description;s.innerText="✅ Analysis complete!";}catch(e){s.innerText="❌ Error: "+e.message;}finally{b.disabled=false;b.innerText="Generate Complaint";}};
+window.autoFillForm=function(){const cs=document.getElementById('categorySelect'),dt=document.getElementById('descriptionText'),cat=document.getElementById('detected-cat').innerText.trim(),desc=document.getElementById('detected-desc').innerText.trim();if(cs&&cat){const m=Array.from(cs.options).find(o=>o.value.toLowerCase()===cat.toLowerCase());cs.value=m?m.value:"other";}if(dt&&desc)dt.value=desc;toggleAIPanel();const ft=document.querySelector('.form-card');if(ft)ft.scrollIntoView({behavior:'smooth',block:'start'});};
 });
 </script>
 {% endblock %}

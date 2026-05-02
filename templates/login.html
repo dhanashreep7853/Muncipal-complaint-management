@@ -1,496 +1,275 @@
 {% extends "base.html" %}
 
-{% block content %}
-<meta http-equiv="Cache-Control" content="no-store" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
+{% block title %}Login – Municipal Complaint System{% endblock %}
 
+{% block extra_head %}
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
-
-<div class="login-page">
-
-    <!-- LEFT DECORATIVE PANEL -->
-    <div class="login-left">
-        <div class="left-pattern"></div>
-        <div class="left-content">
-            <div class="brand-badge">
-                <span class="badge-icon">🔐</span>
-                <span class="badge-text">GovPortal</span>
-            </div>
-            <h1 class="left-headline">Welcome<br>Back.</h1>
-            <p class="left-sub">Access your verified citizen account and manage government services, applications, and status tracking — securely and efficiently.</p>
-            <div class="left-pills">
-                <span class="pill">✔ End-to-end encrypted</span>
-                <span class="pill">✔ OTP verified access</span>
-                <span class="pill">✔ Role-based security</span>
-            </div>
-        </div>
-        <div class="left-circle c1"></div>
-        <div class="left-circle c2"></div>
-    </div>
-
-    <!-- RIGHT FORM PANEL -->
-    <div class="login-right">
-
-        <!-- PAGE HEADING -->
-        <div class="form-heading">
-            <div class="heading-row">
-                <span class="heading-icon">🔐</span>
-                <h2 class="heading-title">Portal Access</h2>
-            </div>
-            <p class="heading-sub">Secure login for Citizens and Municipal Authorities</p>
-            <div class="heading-bar"></div>
-        </div>
-
-        <!-- FORM CARD -->
-        <div class="form-card">
-
-            {% if request.args.get('verified') %}
-            <div class="success-box">
-                <i class="bi bi-check-circle-fill"></i> Email verified successfully! Please log in.
-            </div>
-            {% endif %}
-
-            {% if error %}
-            <div class="error-box">
-                <i class="bi bi-exclamation-triangle-fill"></i> {{ error }}
-            </div>
-            {% endif %}
-
-            <form method="post" autocomplete="off">
-                <input type="text" style="display:none">
-                <input type="password" style="display:none">
-
-                <!-- Email -->
-                <div class="field-group" style="--delay: 0.05s">
-                    <label class="field-label">
-                        <i class="bi bi-envelope-at-fill"></i> Email Address
-                    </label>
-                    <input name="email" type="email" class="field-input"
-                           placeholder="name@example.com"
-                           autocomplete="new-email" required>
-                </div>
-
-                <!-- Password -->
-                <div class="field-group" style="--delay: 0.12s">
-                    <div class="password-label-row">
-                        <label class="field-label">
-                            <i class="bi bi-shield-lock-fill"></i> Password
-                        </label>
-                        <a href="#" class="forgot-link">Forgot password?</a>
-                    </div>
-                    <div class="password-wrapper">
-                        <input name="password" id="loginPassword" type="password"
-                               class="field-input password-input"
-                               placeholder="••••••••"
-                               autocomplete="new-password" required>
-                        <button type="button" class="toggle-eye" onclick="togglePassword()">
-                            <i class="bi bi-eye-slash" id="toggleIcon"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Remember Me -->
-                <div class="field-group remember-row" style="--delay: 0.18s">
-                    <label class="custom-check">
-                        <input type="checkbox" id="rememberMe">
-                        <span class="check-box"></span>
-                        <span class="check-label">Keep me signed in</span>
-                    </label>
-                </div>
-
-                <!-- Submit -->
-                <div class="field-group" style="--delay: 0.24s; margin-top: 8px;">
-                    <button type="submit" class="btn-submit">
-                        <i class="bi bi-box-arrow-in-right"></i>
-                        SECURE LOGIN
-                    </button>
-                </div>
-
-                <div class="signup-footer">
-                    <span>New to the portal?</span>
-                    <a href="/signup" class="signup-link">Create an Account <i class="bi bi-arrow-right-short"></i></a>
-                </div>
-
-            </form>
-        </div>
-    </div>
-</div>
-
 <style>
-/* ===== FONTS & ROOT ===== */
 :root {
-    --green-deep:   #0f3d26;
-    --green-dark:   #1a5c38;
-    --green-mid:    #2d8653;
-    --green-light:  #4caf80;
-    --green-faint:  #eaf4ee;
-    --green-glow:   rgba(45, 134, 83, 0.15);
-    --gold:         #f5c518;
-    --gold-soft:    #fff9e6;
-    --text-main:    #0f2d1c;
-    --text-muted:   #5a7a65;
-    --border:       #d4e8da;
-    --white:        #ffffff;
-    --card-shadow:  0 8px 40px rgba(15, 61, 38, 0.10);
+    --gd:  #0f3d26; --gk: #1a5c38; --gm: #2d8653; --gl: #4caf80;
+    --gf:  #eaf4ee; --gg: rgba(45,134,83,0.15);
+    --gold:#f5c518; --tm: #0f2d1c; --mu: #5a7a65;
+    --br:  #d4e8da; --wh: #ffffff;
+    --cs:  0 8px 40px rgba(15,61,38,0.12);
 }
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--gf); font-family: 'DM Sans', sans-serif; }
 
-body { font-family: 'DM Sans', sans-serif; background: var(--green-faint); }
-
-/* ===== PAGE LAYOUT ===== */
-.login-page {
-    display: flex;
-    min-height: 100vh;
-}
-
-/* ===== LEFT DECORATIVE PANEL ===== */
-.login-left {
-    position: relative;
-    width: 360px;
-    flex-shrink: 0;
-    background: linear-gradient(160deg, var(--green-deep) 0%, var(--green-dark) 55%, var(--green-mid) 100%);
-    overflow: hidden;
+/* ── PAGE WRAPPER: full height, centered ── */
+.auth-page {
+    min-height: calc(100vh - 68px);
     display: flex;
     align-items: center;
-    padding: 50px 40px;
-}
-
-.left-pattern {
-    position: absolute;
-    inset: 0;
-    background-image:
-        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.04) 1px, transparent 1px),
-        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.04) 1px, transparent 1px);
-    background-size: 30px 30px;
-}
-
-.left-circle {
-    position: absolute;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.04);
-}
-.left-circle.c1 { width: 280px; height: 280px; bottom: -80px; right: -80px; }
-.left-circle.c2 { width: 160px; height: 160px; top: -40px; right: 30px; }
-
-.left-content { position: relative; z-index: 2; }
-
-.brand-badge {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 50px;
-    padding: 7px 16px;
-    width: fit-content;
-    margin-bottom: 36px;
-}
-.badge-icon { font-size: 1rem; }
-.badge-text {
-    color: rgba(255,255,255,0.9);
-    font-size: 0.82rem;
-    font-weight: 600;
-    font-family: 'Sora', sans-serif;
-    letter-spacing: 0.5px;
-}
-
-.left-headline {
-    font-family: 'Sora', sans-serif;
-    font-size: 2.8rem;
-    font-weight: 800;
-    color: #fff;
-    line-height: 1.15;
-    margin-bottom: 20px;
-    letter-spacing: -0.5px;
-}
-
-.left-sub {
-    color: rgba(255,255,255,0.65);
-    font-size: 0.88rem;
-    line-height: 1.7;
-    margin-bottom: 30px;
-}
-
-.left-pills { display: flex; flex-direction: column; gap: 10px; }
-.pill {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.12);
-    color: rgba(255,255,255,0.85);
-    border-radius: 6px;
-    padding: 8px 14px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    width: fit-content;
-}
-
-/* ===== RIGHT PANEL ===== */
-.login-right {
-    flex: 1;
-    overflow-y: auto;
-    padding: 48px 52px;
-    background: var(--green-faint);
-    display: flex;
-    flex-direction: column;
     justify-content: center;
-    gap: 28px;
+    padding: 2.5rem 1rem;
+    background: var(--gf);
 }
 
-/* ===== HEADING ===== */
-.heading-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+/* ── CARD ── */
+.auth-card {
+    background: var(--wh);
+    border-radius: 24px;
+    border: 1px solid var(--br);
+    box-shadow: var(--cs);
+    padding: 44px 44px;
+    width: 100%;
+    max-width: 460px;
+}
+
+/* ── CARD HEADER ── */
+.card-header-block {
+    text-align: center;
+    margin-bottom: 32px;
+}
+.card-header-block .icon-circle {
+    width: 60px; height: 60px;
+    background: linear-gradient(135deg, var(--gm), var(--gk));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem;
+    margin: 0 auto 16px;
+    box-shadow: 0 4px 16px rgba(45,134,83,0.3);
+}
+.card-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.6rem; font-weight: 800;
+    color: var(--gd); letter-spacing: -0.3px;
     margin-bottom: 6px;
 }
-.heading-icon { font-size: 1.9rem; line-height: 1; }
-.heading-title {
-    font-family: 'Sora', sans-serif;
-    font-size: 1.85rem;
-    font-weight: 800;
-    color: var(--green-deep);
-    letter-spacing: -0.3px;
+.card-sub {
+    font-size: 0.85rem; color: var(--mu);
 }
-.heading-sub {
-    color: var(--text-muted);
-    font-size: 0.88rem;
-    margin-bottom: 16px;
-    padding-left: 2px;
-}
-.heading-bar {
-    height: 4px;
-    width: 56px;
-    background: var(--gold);
-    border-radius: 20px;
+.gold-bar {
+    height: 4px; width: 48px;
+    background: var(--gold); border-radius: 20px;
+    margin: 12px auto 0;
 }
 
-/* ===== FORM CARD ===== */
-.form-card {
-    background: var(--white);
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    padding: 40px;
-    box-shadow: var(--card-shadow);
-    max-width: 480px;
+/* ── ALERTS ── */
+.alert-success {
+    background: #f0fdf4; color: #166534;
+    border: 1px solid #bbf7d0; border-left: 4px solid #22c55e;
+    border-radius: 10px; padding: 11px 14px;
+    font-size: 0.82rem; margin-bottom: 20px;
+}
+.alert-error {
+    background: #fef2f2; color: #991b1b;
+    border: 1px solid #fecaca; border-left: 4px solid #ef4444;
+    border-radius: 10px; padding: 11px 14px;
+    font-size: 0.82rem; margin-bottom: 20px;
 }
 
-/* ===== ALERTS ===== */
-.success-box {
-    background: #f0fdf4;
-    color: #166534;
-    border: 1px solid #bbf7d0;
-    border-left: 4px solid #22c55e;
-    border-radius: 10px;
-    padding: 12px 16px;
-    font-size: 0.83rem;
-    margin-bottom: 24px;
-}
-.error-box {
-    background: #fef2f2;
-    color: #991b1b;
-    border: 1px solid #fecaca;
-    border-left: 4px solid #ef4444;
-    border-radius: 10px;
-    padding: 12px 16px;
-    font-size: 0.83rem;
-    margin-bottom: 24px;
-}
-
-/* ===== FIELDS ===== */
-.field-group {
-    margin-bottom: 20px;
-    animation: riseIn 0.45s ease-out both;
-    animation-delay: var(--delay, 0s);
-}
-
+/* ── FIELDS ── */
+.field-group { margin-bottom: 18px; }
 .field-label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--green-dark);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.75rem; font-weight: 700;
+    color: var(--gk); text-transform: uppercase;
+    letter-spacing: 0.5px; margin-bottom: 7px;
     font-family: 'Sora', sans-serif;
 }
-
 .field-input {
     width: 100%;
-    border: 1.5px solid var(--border);
-    border-radius: 12px;
-    padding: 13px 16px;
-    font-size: 0.92rem;
-    color: var(--text-main);
-    background: #f8fbf9;
+    border: 1.5px solid var(--br); border-radius: 12px;
+    padding: 12px 15px; font-size: 0.92rem;
+    color: var(--tm); background: #f8fbf9;
     font-family: 'DM Sans', sans-serif;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
     outline: none;
 }
 .field-input::placeholder { color: #a0b8a8; }
 .field-input:focus {
-    border-color: var(--green-mid);
-    background: #fff;
-    box-shadow: 0 0 0 4px var(--green-glow);
+    border-color: var(--gm); background: #fff;
+    box-shadow: 0 0 0 4px var(--gg);
 }
 
-/* ===== PASSWORD ROW ===== */
-.password-label-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
+/* password row */
+.pw-label-row {
+    display: flex; align-items: center;
+    justify-content: space-between; margin-bottom: 7px;
 }
-.forgot-link {
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--green-mid);
-    text-decoration: none;
-    font-family: 'Sora', sans-serif;
-}
-.forgot-link:hover { color: var(--green-dark); text-decoration: underline; }
-
-.password-wrapper {
-    position: relative;
-}
-.password-input {
-    padding-right: 48px;
-}
-.toggle-eye {
-    position: absolute;
-    right: 14px;
-    top: 50%;
+.forgot { font-size: 0.78rem; font-weight: 600; color: var(--gm);
+    text-decoration: none; font-family: 'Sora', sans-serif; }
+.forgot:hover { color: var(--gk); text-decoration: underline; }
+.pw-wrap { position: relative; }
+.pw-wrap .field-input { padding-right: 46px; }
+.eye-btn {
+    position: absolute; right: 13px; top: 50%;
     transform: translateY(-50%);
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--text-muted);
-    font-size: 1rem;
-    padding: 0;
-    line-height: 1;
+    background: none; border: none; cursor: pointer;
+    color: var(--mu); font-size: 1rem; padding: 0; line-height: 1;
     transition: color 0.2s;
 }
-.toggle-eye:hover { color: var(--green-mid); }
+.eye-btn:hover { color: var(--gm); }
 
-/* ===== CUSTOM CHECKBOX ===== */
-.remember-row { margin-bottom: 8px; }
+/* remember */
 .custom-check {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    user-select: none;
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer; user-select: none;
 }
 .custom-check input[type="checkbox"] { display: none; }
-.check-box {
-    width: 18px;
-    height: 18px;
-    border: 2px solid var(--border);
-    border-radius: 5px;
-    background: #f8fbf9;
-    flex-shrink: 0;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.cb-box {
+    width: 18px; height: 18px;
+    border: 2px solid var(--br); border-radius: 5px;
+    background: #f8fbf9; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
 }
-.custom-check input:checked + .check-box {
-    background: var(--green-mid);
-    border-color: var(--green-mid);
-}
-.custom-check input:checked + .check-box::after {
-    content: '✓';
-    color: white;
-    font-size: 0.7rem;
-    font-weight: 800;
-}
-.check-label {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-}
+.custom-check input:checked + .cb-box { background: var(--gm); border-color: var(--gm); }
+.custom-check input:checked + .cb-box::after { content:'✓'; color:#fff; font-size:0.68rem; font-weight:800; }
+.cb-label { font-size: 0.84rem; color: var(--mu); }
 
-/* ===== SUBMIT BUTTON ===== */
-.btn-submit {
+/* ── SUBMIT BUTTON ── */
+.btn-auth {
     width: 100%;
-    background: linear-gradient(135deg, var(--green-mid) 0%, var(--green-dark) 100%);
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    padding: 15px 20px;
-    font-family: 'Sora', sans-serif;
-    font-size: 0.88rem;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    transition: all 0.25s ease;
-    box-shadow: 0 4px 18px rgba(26, 92, 56, 0.3);
+    background: linear-gradient(135deg, var(--gm) 0%, var(--gk) 100%);
+    color: #fff; border: none; border-radius: 12px;
+    padding: 14px; font-family: 'Sora', sans-serif;
+    font-size: 0.88rem; font-weight: 700; letter-spacing: 0.8px;
+    cursor: pointer; display: flex; align-items: center;
+    justify-content: center; gap: 9px;
+    transition: all 0.25s;
+    box-shadow: 0 4px 18px rgba(26,92,56,0.28);
+    margin-top: 6px;
 }
-.btn-submit:hover {
+.btn-auth:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(26, 92, 56, 0.38);
-    background: linear-gradient(135deg, var(--green-light) 0%, var(--green-mid) 100%);
+    box-shadow: 0 8px 24px rgba(26,92,56,0.36);
+    background: linear-gradient(135deg, var(--gl) 0%, var(--gm) 100%);
 }
-.btn-submit:active { transform: translateY(0); }
+.btn-auth:active { transform: translateY(0); }
 
-/* ===== FOOTER ===== */
-.signup-footer {
-    text-align: center;
-    margin-top: 22px;
-    padding-top: 18px;
-    border-top: 1px solid var(--border);
-    font-size: 0.85rem;
-    color: var(--text-muted);
+/* ── FOOTER LINK ── */
+.auth-footer {
+    text-align: center; margin-top: 22px;
+    padding-top: 18px; border-top: 1px solid var(--br);
+    font-size: 0.84rem; color: var(--mu);
 }
-.signup-link {
-    color: var(--green-mid);
-    font-weight: 700;
-    text-decoration: none;
-    margin-left: 4px;
+.auth-footer a {
+    color: var(--gm); font-weight: 700;
+    text-decoration: none; margin-left: 4px;
     font-family: 'Sora', sans-serif;
 }
-.signup-link:hover { color: var(--green-dark); text-decoration: underline; }
+.auth-footer a:hover { color: var(--gk); text-decoration: underline; }
 
-/* ===== ANIMATION ===== */
-@keyframes riseIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
+/* ── RESPONSIVE ── */
+@media (max-width: 520px) {
+    .auth-card { padding: 28px 22px; border-radius: 18px; }
+    .card-title { font-size: 1.4rem; }
 }
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 900px) {
-    .login-left { display: none; }
-    .login-right { padding: 32px 24px; justify-content: flex-start; }
-    .form-card { padding: 28px 22px; }
+@media (max-width: 380px) {
+    .auth-card { padding: 22px 16px; }
 }
 </style>
+{% endblock %}
 
+{% block content %}
+<meta http-equiv="Cache-Control" content="no-store">
+
+<div class="auth-page">
+    <div class="auth-card">
+
+        <!-- Header -->
+        <div class="card-header-block">
+            <div class="icon-circle">🔐</div>
+            <div class="card-title">Welcome Back</div>
+            <div class="card-sub">Secure login for Citizens and Municipal Authorities</div>
+            <div class="gold-bar"></div>
+        </div>
+
+        <!-- Alerts -->
+        {% if request.args.get('verified') %}
+        <div class="alert-success"><i class="bi bi-check-circle-fill"></i> Email verified! Please log in.</div>
+        {% endif %}
+        {% if error %}
+        <div class="alert-error"><i class="bi bi-exclamation-triangle-fill"></i> {{ error }}</div>
+        {% endif %}
+
+        <!-- Form -->
+        <form method="post" autocomplete="off">
+            <input type="text" style="display:none">
+            <input type="password" style="display:none">
+
+            <div class="field-group">
+                <label class="field-label"><i class="bi bi-envelope-at-fill"></i> Email Address</label>
+                <input name="email" type="email" class="field-input"
+                       placeholder="name@example.com" autocomplete="new-email" required>
+            </div>
+
+            <div class="field-group">
+                <div class="pw-label-row">
+                    <label class="field-label" style="margin:0"><i class="bi bi-shield-lock-fill"></i> Password</label>
+                    <a href="#" class="forgot">Forgot password?</a>
+                </div>
+                <div class="pw-wrap">
+                    <input name="password" id="loginPw" type="password"
+                           class="field-input" placeholder="••••••••"
+                           autocomplete="new-password" required>
+                    <button type="button" class="eye-btn" onclick="togglePw('loginPw','eyeIcon')">
+                        <i class="bi bi-eye-slash" id="eyeIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <label class="custom-check">
+                    <input type="checkbox">
+                    <span class="cb-box"></span>
+                    <span class="cb-label">Keep me signed in</span>
+                </label>
+            </div>
+
+            <button type="submit" class="btn-auth">
+                <i class="bi bi-box-arrow-in-right"></i> SECURE LOGIN
+            </button>
+
+            <div class="auth-footer">
+                New to the portal?
+                <a href="/signup">Create an Account <i class="bi bi-arrow-right-short"></i></a>
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
 <script>
-function togglePassword() {
-    const input = document.getElementById('loginPassword');
-    const icon = document.getElementById('toggleIcon');
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.replace('bi-eye-slash', 'bi-eye');
+function togglePw(inputId, iconId) {
+    const i = document.getElementById(inputId);
+    const ic = document.getElementById(iconId);
+    if (i.type === 'password') {
+        i.type = 'text';
+        ic.classList.replace('bi-eye-slash', 'bi-eye');
     } else {
-        input.type = 'password';
-        icon.classList.replace('bi-eye', 'bi-eye-slash');
+        i.type = 'password';
+        ic.classList.replace('bi-eye', 'bi-eye-slash');
     }
 }
-
-window.onload = function () {
+window.addEventListener('load', () => {
     setTimeout(() => {
-        document.querySelectorAll('input').forEach(el => {
-            if (el.type !== 'checkbox') el.value = '';
-        });
+        document.querySelectorAll('input:not([type=checkbox])').forEach(el => el.value = '');
     }, 10);
-};
+});
 </script>
-
 {% endblock %}

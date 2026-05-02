@@ -1,521 +1,223 @@
 {% extends "base.html" %}
 
-{% block content %}
-<meta http-equiv="Cache-Control" content="no-store" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
+{% block title %}Sign Up – Municipal Complaint System{% endblock %}
 
+{% block extra_head %}
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
-
-<div class="signup-page">
-
-    <!-- LEFT DECORATIVE PANEL -->
-    <div class="signup-left">
-        <div class="left-pattern"></div>
-        <div class="left-content">
-            <div class="brand-badge">
-                <span class="badge-icon">🛡️</span>
-                <span class="badge-text">GovPortal</span>
-            </div>
-            <h1 class="left-headline">Secure.<br>Trusted.<br>Official.</h1>
-            <p class="left-sub">Create your verified citizen account to access government services, submit applications, and track their status — all in one place.</p>
-            <div class="left-pills">
-                <span class="pill">✔ End-to-end encrypted</span>
-                <span class="pill">✔ OTP verified access</span>
-                <span class="pill">✔ Role-based security</span>
-            </div>
-        </div>
-        <div class="left-circle c1"></div>
-        <div class="left-circle c2"></div>
-    </div>
-
-    <!-- RIGHT FORM PANEL -->
-    <div class="signup-right">
-
-        <!-- PAGE HEADING -->
-        <div class="form-heading">
-            <div class="heading-row">
-                <span class="heading-icon">🛡️</span>
-                <h2 class="heading-title">Create Account</h2>
-            </div>
-            <p class="heading-sub">Register as a citizen or authorized state admin to access the portal</p>
-            <div class="heading-bar"></div>
-        </div>
-
-        <!-- FORM CARD -->
-        <div class="form-card">
-
-            {% if error %}
-            <div class="error-box">
-                <i class="bi bi-exclamation-triangle-fill"></i> {{ error }}
-            </div>
-            {% endif %}
-
-            <form method="post" id="signupForm" autocomplete="off">
-                <input type="text" name="fakeuser" style="display:none">
-                <input type="password" name="fakepass" style="display:none">
-
-                <!-- Full Name -->
-                <div class="field-group" style="--delay: 0.05s">
-                    <label class="field-label">
-                        <i class="bi bi-person-fill"></i> Full Name
-                    </label>
-                    <input name="name" class="field-input" placeholder="Enter your official full name" required>
-                </div>
-
-                <!-- Email -->
-                <div class="field-group" style="--delay: 0.1s">
-                    <label class="field-label">
-                        <i class="bi bi-envelope-at-fill"></i> Email Address
-                    </label>
-                    <input name="email" type="email" class="field-input" autocomplete="new-password" placeholder="name@example.com" required>
-                </div>
-
-                <!-- Mobile Number -->
-                <div class="field-group" style="--delay: 0.12s">
-                    <label class="field-label">
-                        <i class="bi bi-phone-fill"></i> Mobile Number
-                    </label>
-                    <input name="mobile" type="tel" class="field-input"
-                           placeholder="10-digit mobile number"
-                           pattern="[0-9]{10}" maxlength="10">
-                </div>
-
-                <!-- Password with eye toggle (same pattern as login.html) -->
-                <div class="field-group" style="--delay: 0.15s">
-                    <label class="field-label">
-                        <i class="bi bi-shield-lock-fill"></i> Set Password
-                    </label>
-                    <div class="password-wrapper">
-                        <input name="password" id="signupPassword" type="password" autocomplete="new-password"
-                               class="field-input password-input"
-                               placeholder="••••••••••••" required>
-                        <button type="button" class="toggle-eye" onclick="toggleSignupPassword()">
-                            <i class="bi bi-eye-slash" id="signupToggleIcon"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- State -->
-                <div class="field-group" style="--delay: 0.2s">
-                    <label class="field-label">
-                        <i class="bi bi-geo-alt-fill"></i> State / UT
-                    </label>
-                    <select name="state" class="field-input field-select" required>
-                        <option value="" disabled selected>Select your state or UT</option>
-                        {% for s in states %}
-                        <option value="{{ s }}">{{ s }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <!-- Role -->
-                <div class="field-group" style="--delay: 0.25s">
-                    <label class="field-label">
-                        <i class="bi bi-person-badge-fill"></i> Select Role
-                    </label>
-                    <select name="role" id="roleSelect" class="field-input field-select" onchange="toggleAdminField()" required>
-                        <option value="user">👤 Citizen (User)</option>
-                        <option value="admin">🛡️ Municipal Admin</option>
-                    </select>
-                </div>
-
-                <!-- Admin Code -->
-                <div class="field-group admin-section" id="adminCodeSection" style="display:none; --delay: 0.28s">
-                    <div class="admin-auth-box">
-                        <label class="field-label admin-label">
-                            <i class="bi bi-key-fill"></i> Admin Authorization Code
-                        </label>
-                        <input name="admin_code" id="admin_secret" class="field-input admin-input"
-                               placeholder="e.g., MH@ADMIN2026">
-                        <p class="admin-hint">Required for administrative access. Code issued by your district nodal officer.</p>
-                    </div>
-                </div>
-
-                <!-- Submit -->
-                <div class="field-group" style="--delay: 0.3s; margin-top: 8px;">
-                    <button type="submit" class="btn-submit">
-                        <i class="bi bi-person-plus-fill"></i>
-                        CREATE ACCOUNT & SEND OTP
-                    </button>
-                </div>
-
-                <div class="login-footer">
-                    <span>Already registered?</span>
-                    <a href="/login" class="login-link">Login to Portal <i class="bi bi-arrow-right-short"></i></a>
-                </div>
-
-            </form>
-        </div>
-    </div>
-</div>
-
 <style>
-/* ===== FONTS & ROOT ===== */
 :root {
-    --green-deep:   #0f3d26;
-    --green-dark:   #1a5c38;
-    --green-mid:    #2d8653;
-    --green-light:  #4caf80;
-    --green-faint:  #eaf4ee;
-    --green-glow:   rgba(45, 134, 83, 0.15);
-    --gold:         #f5c518;
-    --gold-soft:    #fff9e6;
-    --text-main:    #0f2d1c;
-    --text-muted:   #5a7a65;
-    --border:       #d4e8da;
-    --white:        #ffffff;
-    --card-shadow:  0 8px 40px rgba(15, 61, 38, 0.10);
+    --gd:#0f3d26; --gk:#1a5c38; --gm:#2d8653; --gl:#4caf80;
+    --gf:#eaf4ee; --gg:rgba(45,134,83,0.15); --gs:#fff9e6;
+    --gold:#f5c518; --tm:#0f2d1c; --mu:#5a7a65; --br:#d4e8da; --wh:#ffffff;
+    --cs:0 8px 40px rgba(15,61,38,0.12);
+}
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--gf); font-family:'DM Sans',sans-serif; }
+
+.auth-page {
+    min-height: calc(100vh - 68px);
+    display:flex; align-items:center; justify-content:center;
+    padding: 2.5rem 1rem; background:var(--gf);
+}
+.auth-card {
+    background:var(--wh); border-radius:24px;
+    border:1px solid var(--br); box-shadow:var(--cs);
+    padding:40px 44px; width:100%; max-width:520px;
+}
+.card-header-block { text-align:center; margin-bottom:28px; }
+.icon-circle {
+    width:60px; height:60px;
+    background:linear-gradient(135deg,var(--gm),var(--gk));
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:1.6rem; margin:0 auto 16px;
+    box-shadow:0 4px 16px rgba(45,134,83,0.3);
+}
+.card-title { font-family:'Sora',sans-serif; font-size:1.6rem; font-weight:800; color:var(--gd); margin-bottom:6px; }
+.card-sub   { font-size:0.84rem; color:var(--mu); }
+.gold-bar   { height:4px; width:48px; background:var(--gold); border-radius:20px; margin:12px auto 0; }
+
+.alert-error {
+    background:#fef2f2; color:#991b1b;
+    border:1px solid #fecaca; border-left:4px solid #ef4444;
+    border-radius:10px; padding:11px 14px; font-size:0.82rem; margin-bottom:20px;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-body { font-family: 'DM Sans', sans-serif; background: var(--green-faint); }
-
-/* ===== PAGE LAYOUT ===== */
-.signup-page {
-    display: flex;
-    min-height: 100vh;
-}
-
-/* ===== LEFT DECORATIVE PANEL ===== */
-.signup-left {
-    position: relative;
-    width: 360px;
-    flex-shrink: 0;
-    background: linear-gradient(160deg, var(--green-deep) 0%, var(--green-dark) 55%, var(--green-mid) 100%);
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    padding: 50px 40px;
-}
-
-.left-pattern {
-    position: absolute;
-    inset: 0;
-    background-image:
-        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.04) 1px, transparent 1px),
-        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.04) 1px, transparent 1px);
-    background-size: 30px 30px;
-}
-
-.left-circle {
-    position: absolute;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.04);
-}
-.left-circle.c1 { width: 280px; height: 280px; bottom: -80px; right: -80px; }
-.left-circle.c2 { width: 160px; height: 160px; top: -40px; right: 30px; }
-
-.left-content { position: relative; z-index: 2; }
-
-.brand-badge {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 50px;
-    padding: 7px 16px;
-    width: fit-content;
-    margin-bottom: 36px;
-}
-.badge-icon { font-size: 1rem; }
-.badge-text { color: rgba(255,255,255,0.9); font-size: 0.82rem; font-weight: 600; font-family: 'Sora', sans-serif; letter-spacing: 0.5px; }
-
-.left-headline {
-    font-family: 'Sora', sans-serif;
-    font-size: 2.6rem;
-    font-weight: 800;
-    color: #fff;
-    line-height: 1.15;
-    margin-bottom: 20px;
-    letter-spacing: -0.5px;
-}
-
-.left-sub {
-    color: rgba(255,255,255,0.65);
-    font-size: 0.88rem;
-    line-height: 1.7;
-    margin-bottom: 30px;
-}
-
-.left-pills { display: flex; flex-direction: column; gap: 10px; }
-.pill {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.12);
-    color: rgba(255,255,255,0.85);
-    border-radius: 6px;
-    padding: 8px 14px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    width: fit-content;
-}
-
-/* ===== RIGHT FORM PANEL ===== */
-.signup-right {
-    flex: 1;
-    overflow-y: auto;
-    padding: 48px 52px;
-    background: var(--green-faint);
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
-}
-
-/* ===== HEADING SECTION ===== */
-.heading-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 6px;
-}
-.heading-icon { font-size: 1.9rem; line-height: 1; }
-.heading-title {
-    font-family: 'Sora', sans-serif;
-    font-size: 1.85rem;
-    font-weight: 800;
-    color: var(--green-deep);
-    letter-spacing: -0.3px;
-}
-.heading-sub {
-    color: var(--text-muted);
-    font-size: 0.88rem;
-    margin-bottom: 16px;
-    padding-left: 2px;
-}
-.heading-bar {
-    height: 4px;
-    width: 56px;
-    background: var(--gold);
-    border-radius: 20px;
-}
-
-/* ===== FORM CARD ===== */
-.form-card {
-    background: var(--white);
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    padding: 38px 40px;
-    box-shadow: var(--card-shadow);
-    max-width: 620px;
-}
-
-/* ===== ERROR BOX ===== */
-.error-box {
-    background: #fef2f2;
-    color: #991b1b;
-    border: 1px solid #fecaca;
-    border-left: 4px solid #ef4444;
-    border-radius: 10px;
-    padding: 12px 16px;
-    font-size: 0.83rem;
-    margin-bottom: 24px;
-}
-
-/* ===== FIELD GROUPS ===== */
-.field-group {
-    margin-bottom: 20px;
-    animation: riseIn 0.45s ease-out both;
-    animation-delay: var(--delay, 0s);
-}
-
+/* Fields */
+.field-group { margin-bottom:17px; }
 .field-label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--green-dark);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
-    font-family: 'Sora', sans-serif;
+    display:flex; align-items:center; gap:6px;
+    font-size:0.74rem; font-weight:700; color:var(--gk);
+    text-transform:uppercase; letter-spacing:0.5px; margin-bottom:7px;
+    font-family:'Sora',sans-serif;
 }
-
 .field-input {
-    width: 100%;
-    border: 1.5px solid var(--border);
-    border-radius: 12px;
-    padding: 13px 16px;
-    font-size: 0.92rem;
-    color: var(--text-main);
-    background: #f8fbf9;
-    font-family: 'DM Sans', sans-serif;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-    outline: none;
-    appearance: none;
-    -webkit-appearance: none;
+    width:100%; border:1.5px solid var(--br); border-radius:12px;
+    padding:12px 15px; font-size:0.92rem; color:var(--tm);
+    background:#f8fbf9; font-family:'DM Sans',sans-serif;
+    transition:border-color 0.2s,box-shadow 0.2s,background 0.2s;
+    outline:none; appearance:none; -webkit-appearance:none;
 }
+.field-input::placeholder { color:#a0b8a8; }
+.field-input:focus { border-color:var(--gm); background:#fff; box-shadow:0 0 0 4px var(--gg); }
 
-.field-input::placeholder { color: #a0b8a8; }
-
-.field-input:focus {
-    border-color: var(--green-mid);
-    background: #fff;
-    box-shadow: 0 0 0 4px var(--green-glow);
-}
-
+/* Select arrow */
 .field-select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232d8653' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 16px center;
-    padding-right: 40px;
-    cursor: pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232d8653' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 14px center;
+    padding-right:38px; cursor:pointer;
 }
 
-/* ===== ADMIN BOX ===== */
-.admin-auth-box {
-    background: var(--gold-soft);
-    border: 1.5px solid #f0d060;
-    border-left: 5px solid var(--gold);
-    border-radius: 12px;
-    padding: 18px 20px;
+/* Password */
+.pw-wrap { position:relative; }
+.pw-wrap .field-input { padding-right:46px; }
+.eye-btn {
+    position:absolute; right:13px; top:50%; transform:translateY(-50%);
+    background:none; border:none; cursor:pointer; color:var(--mu);
+    font-size:1rem; padding:0; line-height:1; transition:color 0.2s;
 }
-.admin-label { color: #7a5c00 !important; }
-.admin-input {
-    background: #fff !important;
-    border-color: #e8c840 !important;
-}
-.admin-input:focus {
-    border-color: var(--gold) !important;
-    box-shadow: 0 0 0 4px rgba(245, 197, 24, 0.12) !important;
-}
-.admin-hint {
-    margin-top: 8px;
-    font-size: 0.72rem;
-    color: #9a7a20;
-    line-height: 1.5;
-}
+.eye-btn:hover { color:var(--gm); }
 
-/* ===== PASSWORD TOGGLE (eye icon) ===== */
-/* Reused from login.html — same pattern, same styles */
-.password-wrapper {
-    position: relative;
+/* Admin box */
+.admin-box {
+    background:var(--gs); border:1.5px solid #f0d060;
+    border-left:5px solid var(--gold); border-radius:12px; padding:16px 18px;
 }
-.password-input {
-    padding-right: 48px;
-}
-.toggle-eye {
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--text-muted);
-    font-size: 1rem;
-    padding: 0;
-    line-height: 1;
-    transition: color 0.2s;
-}
-.toggle-eye:hover { color: var(--green-mid); }
+.admin-label { color:#7a5c00 !important; }
+.admin-input { background:#fff !important; border-color:#e8c840 !important; }
+.admin-input:focus { border-color:var(--gold) !important; box-shadow:0 0 0 4px rgba(245,197,24,0.12) !important; }
+.admin-hint { margin-top:7px; font-size:0.71rem; color:#9a7a20; line-height:1.5; }
 
-/* ===== SUBMIT BUTTON ===== */
-.btn-submit {
-    width: 100%;
-    background: linear-gradient(135deg, var(--green-mid) 0%, var(--green-dark) 100%);
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    padding: 15px 20px;
-    font-family: 'Sora', sans-serif;
-    font-size: 0.88rem;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    transition: all 0.25s ease;
-    box-shadow: 0 4px 18px rgba(26, 92, 56, 0.3);
+.btn-auth {
+    width:100%; background:linear-gradient(135deg,var(--gm) 0%,var(--gk) 100%);
+    color:#fff; border:none; border-radius:12px; padding:14px;
+    font-family:'Sora',sans-serif; font-size:0.87rem; font-weight:700;
+    letter-spacing:0.8px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:9px;
+    transition:all 0.25s; box-shadow:0 4px 18px rgba(26,92,56,0.28); margin-top:6px;
 }
+.btn-auth:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(26,92,56,0.36); background:linear-gradient(135deg,var(--gl),var(--gm)); }
+.btn-auth:active { transform:translateY(0); }
 
-.btn-submit:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(26, 92, 56, 0.38);
-    background: linear-gradient(135deg, var(--green-light) 0%, var(--green-mid) 100%);
+.auth-footer {
+    text-align:center; margin-top:20px; padding-top:18px;
+    border-top:1px solid var(--br); font-size:0.84rem; color:var(--mu);
 }
+.auth-footer a { color:var(--gm); font-weight:700; text-decoration:none; margin-left:4px; font-family:'Sora',sans-serif; }
+.auth-footer a:hover { color:var(--gk); text-decoration:underline; }
 
-.btn-submit:active { transform: translateY(0); }
-
-/* ===== LOGIN FOOTER ===== */
-.login-footer {
-    text-align: center;
-    margin-top: 22px;
-    padding-top: 18px;
-    border-top: 1px solid var(--border);
-    font-size: 0.85rem;
-    color: var(--text-muted);
-}
-.login-link {
-    color: var(--green-mid);
-    font-weight: 700;
-    text-decoration: none;
-    margin-left: 4px;
-    font-family: 'Sora', sans-serif;
-}
-.login-link:hover { color: var(--green-dark); text-decoration: underline; }
-
-/* ===== ANIMATIONS ===== */
-@keyframes riseIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 900px) {
-    .signup-left { display: none; }
-    .signup-right { padding: 32px 24px; }
-    .form-card { padding: 28px 22px; }
+@media (max-width:520px) {
+    .auth-card { padding:26px 18px; border-radius:18px; }
+    .card-title { font-size:1.4rem; }
 }
 </style>
+{% endblock %}
 
+{% block content %}
+<meta http-equiv="Cache-Control" content="no-store">
+
+<div class="auth-page">
+    <div class="auth-card">
+
+        <div class="card-header-block">
+            <div class="icon-circle">🛡️</div>
+            <div class="card-title">Create Account</div>
+            <div class="card-sub">Register as a citizen or authorized state admin</div>
+            <div class="gold-bar"></div>
+        </div>
+
+        {% if error %}
+        <div class="alert-error"><i class="bi bi-exclamation-triangle-fill"></i> {{ error }}</div>
+        {% endif %}
+
+        <form method="post" id="signupForm" autocomplete="off">
+            <input type="text" name="fakeuser" style="display:none">
+            <input type="password" name="fakepass" style="display:none">
+
+            <div class="field-group">
+                <label class="field-label"><i class="bi bi-person-fill"></i> Full Name</label>
+                <input name="name" class="field-input" placeholder="Enter your official full name" required>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label"><i class="bi bi-envelope-at-fill"></i> Email Address</label>
+                <input name="email" type="email" class="field-input" autocomplete="new-password" placeholder="name@example.com" required>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label"><i class="bi bi-phone-fill"></i> Mobile Number</label>
+                <input name="mobile" type="tel" class="field-input" placeholder="10-digit mobile number" pattern="[0-9]{10}" maxlength="10">
+            </div>
+
+            <div class="field-group">
+                <label class="field-label"><i class="bi bi-shield-lock-fill"></i> Set Password</label>
+                <div class="pw-wrap">
+                    <input name="password" id="signupPw" type="password" autocomplete="new-password"
+                           class="field-input" placeholder="••••••••••••" required>
+                    <button type="button" class="eye-btn" onclick="togglePw('signupPw','signupEye')">
+                        <i class="bi bi-eye-slash" id="signupEye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label"><i class="bi bi-geo-alt-fill"></i> State / UT</label>
+                <select name="state" class="field-input field-select" required>
+                    <option value="" disabled selected>Select your state or UT</option>
+                    {% for s in states %}
+                    <option value="{{ s }}">{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label"><i class="bi bi-person-badge-fill"></i> Select Role</label>
+                <select name="role" id="roleSelect" class="field-input field-select" onchange="toggleAdminField()" required>
+                    <option value="user">👤 Citizen (User)</option>
+                    <option value="admin">🛡️ Municipal Admin</option>
+                </select>
+            </div>
+
+            <div class="field-group" id="adminCodeSection" style="display:none">
+                <div class="admin-box">
+                    <label class="field-label admin-label"><i class="bi bi-key-fill"></i> Admin Authorization Code</label>
+                    <input name="admin_code" id="admin_secret" class="field-input admin-input" placeholder="e.g., MH@ADMIN2026">
+                    <p class="admin-hint">Required for administrative access. Code issued by your district nodal officer.</p>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-auth">
+                <i class="bi bi-person-plus-fill"></i> CREATE ACCOUNT &amp; SEND OTP
+            </button>
+
+            <div class="auth-footer">
+                Already registered?
+                <a href="/login">Login to Portal <i class="bi bi-arrow-right-short"></i></a>
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
 <script>
-// Toggle password visibility — same pattern as login.html
-function toggleSignupPassword() {
-    const input = document.getElementById('signupPassword');
-    const icon  = document.getElementById('signupToggleIcon');
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.replace('bi-eye-slash', 'bi-eye');
-    } else {
-        input.type = 'password';
-        icon.classList.replace('bi-eye', 'bi-eye-slash');
-    }
+function togglePw(inputId, iconId) {
+    const i = document.getElementById(inputId);
+    const ic = document.getElementById(iconId);
+    i.type === 'password' ? (i.type = 'text', ic.classList.replace('bi-eye-slash','bi-eye'))
+                          : (i.type = 'password', ic.classList.replace('bi-eye','bi-eye-slash'));
 }
-
 function toggleAdminField() {
-    const role = document.getElementById("roleSelect").value;
-    const adminSection = document.getElementById("adminCodeSection");
-    const adminInput = document.getElementById("admin_secret");
-
-    if (role === "admin") {
-        adminSection.style.display = "block";
-        adminInput.setAttribute("required", "required");
-    } else {
-        adminSection.style.display = "none";
-        adminInput.removeAttribute("required");
-        adminInput.value = "";
-    }
+    const role = document.getElementById('roleSelect').value;
+    const sec  = document.getElementById('adminCodeSection');
+    const inp  = document.getElementById('admin_secret');
+    if (role === 'admin') { sec.style.display = 'block'; inp.setAttribute('required','required'); }
+    else { sec.style.display = 'none'; inp.removeAttribute('required'); inp.value = ''; }
 }
-
-window.onload = function () {
-    const form = document.getElementById("signupForm");
-    if (form) {
-        form.reset();
-        document.querySelectorAll("input").forEach(i => i.value = "");
-        document.querySelectorAll("select").forEach(s => s.selectedIndex = 0);
-        toggleAdminField();
-    }
+window.onload = function() {
+    const form = document.getElementById('signupForm');
+    if (form) { form.reset(); toggleAdminField(); }
 };
-
-window.addEventListener('pageshow', function (event) {
-    if (event.persisted) window.location.reload();
-});
+window.addEventListener('pageshow', e => { if (e.persisted) window.location.reload(); });
 </script>
-
 {% endblock %}

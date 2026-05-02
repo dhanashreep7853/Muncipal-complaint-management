@@ -1,333 +1,253 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Municipal Complaint System – Government of India</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        :root {
-            --green-dark:   #1a4731;
-            --green-mid:    #2d6a4f;
-            --green-light:  #40916c;
-            --green-pale:   #d8f3dc;
-            --green-accent: #52b788;
-            --white:        #ffffff;
-            --off-white:    #f8fdf9;
-            --text-dark:    #1b2d24;
-            --text-muted:   #5a7a68;
-            --gold:         #c9a84c;
-            --gold-light:   #f0d990;
-        }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'DM Sans',sans-serif; background:var(--white); color:var(--text-dark); overflow-x:hidden; }
+{% extends "base.html" %}
 
-        /* ── NAVBAR ── */
-        .navbar {
-            background: var(--green-dark) !important;
-            padding: 0 2.5rem; height: 68px;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.2);
-            position: sticky; top: 0; z-index: 100;
-            border-bottom: 3px solid var(--gold);
-            display: flex; align-items: center; justify-content: space-between;
-        }
-        .navbar-brand {
-            font-family:'Playfair Display',serif; font-size:1.2rem;
-            color: var(--white); text-decoration:none;
-            display:flex; align-items:center; gap:10px;
-        }
-        .navbar-brand .emblem {
-            width:38px; height:38px; background:var(--gold);
-            border-radius:50%; display:flex; align-items:center;
-            justify-content:center; font-size:1.2rem;
-        }
-        .nav-links { display:flex; gap:6px; align-items:center; }
-        .nav-links a {
-            color:rgba(255,255,255,0.85); text-decoration:none;
-            padding:8px 18px; border-radius:6px;
-            font-size:0.88rem; font-weight:500;
-            transition:all 0.2s; display:flex; align-items:center; gap:6px;
-        }
-        .nav-links a:hover { background:var(--green-light); color:var(--white); }
-        .nav-links .btn-login {
-            background: rgba(255,255,255,0.12);
-            border:1px solid rgba(255,255,255,0.3);
-        }
-        .nav-links .btn-signup {
-            background:var(--gold); color:var(--green-dark) !important;
-            font-weight:700;
-        }
-        .nav-links .btn-signup:hover { background:var(--gold-light); }
+{% block title %}Municipal Complaint System – Government of India{% endblock %}
 
-        /* ── HERO ── */
-        .hero {
-            background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-mid) 60%, #1e5c3a 100%);
-            min-height: 90vh;
-            display: flex; align-items: center;
-            position: relative; overflow: hidden;
-        }
-        .hero::before {
-            content: '';
-            position: absolute; inset: 0;
-            background:
-                radial-gradient(circle at 70% 30%, rgba(201,168,76,0.15) 0%, transparent 50%),
-                radial-gradient(circle at 20% 80%, rgba(82,183,136,0.15) 0%, transparent 50%);
-        }
-        .hero-watermark {
-            position: absolute; right: -60px; top: 50%;
-            transform: translateY(-50%);
-            font-size: 28rem; opacity: 0.04;
-            color: var(--white); user-select: none;
-            line-height: 1;
-        }
-        .hero-content { position:relative; z-index:1; color:var(--white); }
-        .hero-eyebrow {
-            display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(201,168,76,0.2);
-            border: 1px solid rgba(201,168,76,0.5);
-            border-radius: 30px; padding: 6px 18px;
-            font-size: 0.8rem; font-weight: 600; letter-spacing: 1.5px;
-            text-transform: uppercase; color: var(--gold-light);
-            margin-bottom: 1.5rem;
-        }
-        .hero h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(2.2rem, 5vw, 3.8rem);
-            font-weight: 700; line-height: 1.15;
-            margin-bottom: 1.2rem;
-        }
-        .hero h1 span { color: var(--gold); }
-        .hero p.lead {
-            font-size: 1.1rem; font-weight: 300;
-            color: rgba(255,255,255,0.80);
-            max-width: 520px; line-height: 1.75;
-            margin-bottom: 2.2rem;
-        }
-        .hero-cta { display:flex; gap:14px; flex-wrap:wrap; }
-        .btn-hero-primary {
-            background: var(--gold); color: var(--green-dark);
-            padding: 14px 36px; border-radius: 8px;
-            font-weight: 700; font-size: 1rem; text-decoration: none;
-            display: inline-flex; align-items: center; gap: 8px;
-            transition: all 0.25s;
-            box-shadow: 0 4px 20px rgba(201,168,76,0.4);
-        }
-        .btn-hero-primary:hover {
-            background: var(--gold-light); color: var(--green-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 28px rgba(201,168,76,0.5);
-        }
-        .btn-hero-secondary {
-            background: rgba(255,255,255,0.1);
-            border: 1.5px solid rgba(255,255,255,0.4);
-            color: var(--white); padding: 14px 36px;
-            border-radius: 8px; font-weight: 600; font-size: 1rem;
-            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
-            transition: all 0.25s;
-        }
-        .btn-hero-secondary:hover {
-            background: rgba(255,255,255,0.2); color: var(--white);
-            transform: translateY(-2px);
-        }
-        .hero-visual {
-            display: flex; flex-direction: column; gap: 16px;
-            position: relative;
-        }
-        .hero-card {
-            background: rgba(255,255,255,0.08);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 16px; padding: 1.2rem 1.6rem;
-            display: flex; align-items: center; gap: 14px;
-            color: var(--white);
-        }
-        .hero-card .hc-icon {
-            width: 46px; height: 46px; background: rgba(201,168,76,0.2);
-            border: 1px solid rgba(201,168,76,0.4);
-            border-radius: 10px; display: flex; align-items: center;
-            justify-content: center; font-size: 1.4rem; flex-shrink: 0;
-        }
-        .hero-card .hc-num {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.8rem; font-weight: 700; color: var(--gold); line-height: 1;
-        }
-        .hero-card .hc-label {
-            font-size: 0.8rem; color: rgba(255,255,255,0.65); font-weight: 400;
-        }
-        .hero-card.float-1 { animation: floatCard 4s ease-in-out infinite; }
-        .hero-card.float-2 { animation: floatCard 4s ease-in-out infinite 0.8s; }
-        .hero-card.float-3 { animation: floatCard 4s ease-in-out infinite 1.6s; }
-        @keyframes floatCard {
-            0%,100% { transform: translateY(0); }
-            50%      { transform: translateY(-8px); }
-        }
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+    body { background: #ffffff; overflow-x: hidden; }
 
-        /* ── TRUST BAR ── */
-        .trust-bar {
-            background: var(--off-white);
-            border-top: 1px solid var(--green-pale);
-            border-bottom: 1px solid var(--green-pale);
-            padding: 1rem 0;
-        }
-        .trust-item {
-            display: flex; align-items: center; gap: 8px;
-            font-size: 0.85rem; font-weight: 500; color: var(--text-muted);
-            justify-content: center;
-        }
-        .trust-item i { color: var(--green-light); font-size: 1rem; }
+    /* ══ HERO ══ */
+    .hero {
+        background: linear-gradient(135deg, #1a4731 0%, #2d6a4f 60%, #1e5c3a 100%);
+        min-height: 88vh;
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+        padding: 4rem 0;
+    }
+    .hero::before {
+        content: '';
+        position: absolute; inset: 0;
+        background:
+            radial-gradient(circle at 70% 30%, rgba(201,168,76,0.15) 0%, transparent 50%),
+            radial-gradient(circle at 20% 80%, rgba(82,183,136,0.15) 0%, transparent 50%);
+        pointer-events: none;
+    }
+    .hero-watermark {
+        position: absolute; right: -80px; top: 50%;
+        transform: translateY(-50%);
+        font-size: clamp(8rem, 22vw, 26rem);
+        opacity: 0.04; color: #fff;
+        user-select: none; line-height: 1; pointer-events: none;
+    }
+    .hero-content { position: relative; z-index: 1; color: #fff; }
 
-        /* ── HOW IT WORKS ── */
-        .section { padding: 5rem 0; }
-        .section-label {
-            font-size: 0.75rem; font-weight: 700; letter-spacing: 2px;
-            text-transform: uppercase; color: var(--green-light);
-            margin-bottom: 0.5rem;
-        }
-        .section-title {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(1.8rem, 3.5vw, 2.6rem);
-            color: var(--green-dark); font-weight: 700; margin-bottom: 0.6rem;
-        }
-        .section-sub {
-            color: var(--text-muted); font-size: 1rem;
-            max-width: 520px; line-height: 1.7;
-        }
-        .step-card {
-            background: var(--white);
-            border-radius: 20px; padding: 2.2rem;
-            box-shadow: 0 4px 24px rgba(26,71,49,0.08);
-            border: 1px solid rgba(64,145,108,0.12);
-            height: 100%; position: relative;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .step-card:hover { transform: translateY(-6px); box-shadow: 0 12px 40px rgba(26,71,49,0.14); }
-        .step-number {
-            width: 48px; height: 48px;
-            background: var(--green-pale); border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Playfair Display', serif;
-            font-size: 1.4rem; font-weight: 700; color: var(--green-mid);
-            margin-bottom: 1.2rem;
-        }
-        .step-card h5 {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.15rem; color: var(--green-dark); margin-bottom: 0.6rem;
-        }
-        .step-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; margin: 0; }
-        .step-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .hero-eyebrow {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: rgba(201,168,76,0.2);
+        border: 1px solid rgba(201,168,76,0.5);
+        border-radius: 30px; padding: 6px 18px;
+        font-size: 0.73rem; font-weight: 600; letter-spacing: 1.5px;
+        text-transform: uppercase; color: #f0d990;
+        margin-bottom: 1.4rem;
+    }
+    .hero h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(1.9rem, 5vw, 3.8rem);
+        font-weight: 700; line-height: 1.15; margin-bottom: 1.2rem;
+    }
+    .hero h1 span { color: #c9a84c; }
+    .hero p.lead {
+        font-size: clamp(0.92rem, 2vw, 1.08rem);
+        font-weight: 300; color: rgba(255,255,255,0.80);
+        max-width: 520px; line-height: 1.75; margin-bottom: 2rem;
+    }
+    .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; }
 
-        /* ── CATEGORIES ── */
-        .categories-section { background: var(--green-dark); padding: 5rem 0; }
-        .categories-section .section-title,
-        .categories-section .section-label { color: var(--gold); }
-        .categories-section .section-sub   { color: rgba(255,255,255,0.65); }
-        .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-        .cat-item {
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 12px; padding: 1.2rem 1rem;
-            text-align: center; color: var(--white);
-            font-size: 0.82rem; font-weight: 500;
-            transition: all 0.2s; cursor: default;
-        }
-        .cat-item:hover { background: rgba(201,168,76,0.15); border-color: rgba(201,168,76,0.4); }
-        .cat-item .cat-emoji { font-size: 1.6rem; display: block; margin-bottom: 6px; }
+    .btn-hero-primary {
+        background: #c9a84c; color: #1a4731;
+        padding: 13px 28px; border-radius: 8px;
+        font-weight: 700; font-size: 0.95rem; text-decoration: none;
+        display: inline-flex; align-items: center; gap: 8px;
+        transition: all 0.25s;
+        box-shadow: 0 4px 20px rgba(201,168,76,0.4);
+        white-space: nowrap;
+    }
+    .btn-hero-primary:hover {
+        background: #f0d990; color: #1a4731;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px rgba(201,168,76,0.5);
+    }
+    .btn-hero-secondary {
+        background: rgba(255,255,255,0.1);
+        border: 1.5px solid rgba(255,255,255,0.4);
+        color: #fff; padding: 13px 28px;
+        border-radius: 8px; font-weight: 600; font-size: 0.95rem;
+        text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        transition: all 0.25s; white-space: nowrap;
+    }
+    .btn-hero-secondary:hover {
+        background: rgba(255,255,255,0.2); color: #fff;
+        transform: translateY(-2px);
+    }
 
-        /* ── STATS ── */
-        .stats-section { background: var(--off-white); padding: 5rem 0; }
-        .stat-box { text-align: center; padding: 2rem; }
-        .stat-box .big-num {
-            font-family: 'Playfair Display', serif;
-            font-size: 3.5rem; font-weight: 700;
-            color: var(--green-dark); line-height: 1;
-        }
-        .stat-box .big-num span { color: var(--gold); }
-        .stat-box p { color: var(--text-muted); font-size: 0.9rem; margin-top: 6px; }
-        .stat-divider { width: 1px; background: var(--green-pale); }
+    /* Stat cards */
+    .hero-visual { display: flex; flex-direction: column; gap: 14px; }
+    .hero-card {
+        background: rgba(255,255,255,0.08);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 16px; padding: 1rem 1.4rem;
+        display: flex; align-items: center; gap: 14px; color: #fff;
+        transition: transform 0.3s;
+    }
+    .hero-card:hover { transform: translateY(-4px); }
+    .hc-icon {
+        width: 46px; height: 46px; min-width: 46px;
+        background: rgba(201,168,76,0.2);
+        border: 1px solid rgba(201,168,76,0.4);
+        border-radius: 10px; display: flex; align-items: center;
+        justify-content: center; font-size: 1.4rem;
+    }
+    .hc-num {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.8rem; font-weight: 700; color: #c9a84c; line-height: 1;
+    }
+    .hc-label { font-size: 0.8rem; color: rgba(255,255,255,0.65); }
 
-        /* ── CTA SECTION ── */
-        .cta-section {
-            background: linear-gradient(135deg, var(--green-mid), var(--green-dark));
-            padding: 5rem 0; text-align: center; color: var(--white);
-            position: relative; overflow: hidden;
-        }
-        .cta-section::before {
-            content: '';
-            position: absolute; inset: 0;
-            background: radial-gradient(circle at 50% 50%, rgba(201,168,76,0.12) 0%, transparent 60%);
-        }
-        .cta-section h2 {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(1.8rem, 4vw, 2.8rem); margin-bottom: 1rem;
-        }
-        .cta-section p { color: rgba(255,255,255,0.75); max-width: 500px; margin: 0 auto 2rem; font-size:1rem; }
+    .float-1 { animation: floatCard 4s ease-in-out infinite; }
+    .float-2 { animation: floatCard 4s ease-in-out infinite 0.8s; margin-left: clamp(0px, 4vw, 2rem); }
+    .float-3 { animation: floatCard 4s ease-in-out infinite 1.6s; }
+    @keyframes floatCard {
+        0%,100% { transform: translateY(0); }
+        50%      { transform: translateY(-8px); }
+    }
 
-        /* ── FOOTER ── */
-        .site-footer {
-            background: var(--green-dark); color: rgba(255,255,255,0.65);
-            padding: 2rem 0; text-align: center; font-size: 0.82rem;
-            border-top: 3px solid var(--gold);
-        }
+    /* ══ TRUST BAR ══ */
+    .trust-bar {
+        background: #f8fdf9;
+        border-top: 1px solid #d8f3dc;
+        border-bottom: 1px solid #d8f3dc;
+        padding: 0.9rem 0;
+    }
+    .trust-item {
+        display: flex; align-items: center; gap: 7px;
+        font-size: 0.81rem; font-weight: 500; color: #5a7a68;
+        justify-content: center; padding: 4px 0;
+    }
+    .trust-item i { color: #40916c; font-size: 0.95rem; }
 
-        /* ── ANIMATIONS ── */
-        .fade-in { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
-        .fade-in.visible { opacity: 1; transform: translateY(0); }
-        .fade-delay-1 { transition-delay: 0.1s; }
-        .fade-delay-2 { transition-delay: 0.2s; }
-        .fade-delay-3 { transition-delay: 0.3s; }
-        .fade-delay-4 { transition-delay: 0.4s; }
-    </style>
-</head>
-<body>
+    /* ══ HOW IT WORKS ══ */
+    .section { padding: 4.5rem 0; }
+    .section-label {
+        font-size: 0.7rem; font-weight: 700; letter-spacing: 2px;
+        text-transform: uppercase; color: #40916c; margin-bottom: 0.5rem;
+    }
+    .section-title {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(1.6rem, 3.5vw, 2.5rem);
+        color: #1a4731; font-weight: 700; margin-bottom: 0.6rem;
+    }
+    .section-sub { color: #5a7a68; font-size: 0.95rem; max-width: 520px; line-height: 1.7; }
+    .step-card {
+        background: #fff;
+        border-radius: 20px; padding: 2rem;
+        box-shadow: 0 4px 24px rgba(26,71,49,0.08);
+        border: 1px solid rgba(64,145,108,0.12);
+        height: 100%;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .step-card:hover { transform: translateY(-6px); box-shadow: 0 12px 40px rgba(26,71,49,0.14); }
+    .step-icon { font-size: 2.2rem; margin-bottom: 0.8rem; }
+    .step-number {
+        width: 46px; height: 46px;
+        background: #d8f3dc; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Playfair Display', serif;
+        font-size: 1.3rem; font-weight: 700; color: #2d6a4f;
+        margin-bottom: 1rem;
+    }
+    .step-card h5 {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.1rem; color: #1a4731; margin-bottom: 0.5rem;
+    }
+    .step-card p { font-size: 0.87rem; color: #5a7a68; line-height: 1.7; margin: 0; }
 
-<!-- ═══════════════════════════════════════════════════════════════
-     NAVBAR — Three states: guest / logged-in user / logged-in admin
-     session.role is set by Flask login route
-════════════════════════════════════════════════════════════════ -->
-<nav class="navbar">
-    <a class="navbar-brand" href="/home">
-        <div class="emblem">🏛️</div>
-        Municipal Complaint System
-    </a>
-    <div class="nav-links">
+    /* ══ CATEGORIES ══ */
+    .categories-section { background: #1a4731; padding: 4.5rem 0; }
+    .categories-section .section-title,
+    .categories-section .section-label { color: #c9a84c; }
+    .cat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+    }
+    .cat-item {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 12px; padding: 1rem 0.7rem;
+        text-align: center; color: #fff;
+        font-size: 0.77rem; font-weight: 500;
+        transition: all 0.2s;
+    }
+    .cat-item:hover { background: rgba(201,168,76,0.15); border-color: rgba(201,168,76,0.4); }
+    .cat-emoji { font-size: 1.5rem; display: block; margin-bottom: 5px; }
 
-        <!-- Home link is always visible for all roles -->
-        <a href="/home"><i class="bi bi-house"></i> Home</a>
+    /* ══ STATS ══ */
+    .stats-section { background: #f8fdf9; padding: 4.5rem 0; }
+    .stat-box { text-align: center; padding: 1.5rem 1rem; }
+    .big-num {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(2.4rem, 5vw, 3.5rem);
+        font-weight: 700; color: #1a4731; line-height: 1;
+    }
+    .big-num span { color: #c9a84c; }
+    .stat-box p { color: #5a7a68; font-size: 0.87rem; margin-top: 6px; }
+    .stat-divider { width: 1px; background: #d8f3dc; }
 
-        {% if session.get('role') == 'admin' %}
-            <!-- ── ADMIN NAV: Home, Admin Panal, Logout ── -->
-            <a href="/admin"><i class="bi bi-speedometer2"></i> Admin Panal</a>
-            <a href="/logout" class="btn-login"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    /* ══ CTA ══ */
+    .cta-section {
+        background: linear-gradient(135deg, #2d6a4f, #1a4731);
+        padding: 4.5rem 1rem; text-align: center; color: #fff;
+        position: relative; overflow: hidden;
+    }
+    .cta-section::before {
+        content: '';
+        position: absolute; inset: 0;
+        background: radial-gradient(circle at 50% 50%, rgba(201,168,76,0.12) 0%, transparent 60%);
+        pointer-events: none;
+    }
+    .cta-section h2 {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(1.7rem, 4vw, 2.8rem); margin-bottom: 1rem;
+    }
+    .cta-sub { color: rgba(255,255,255,0.75); max-width: 500px; margin: 0 auto 2rem; font-size: 1rem; }
+    .cta-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
 
-        {% elif session.get('role') == 'user' %}
-            <!-- ── USER NAV: Home, Complaint, Track, Logout ── -->
-            <a href="/submit"><i class="bi bi-pencil-square"></i> Complaint</a>
-            <a href="/track"><i class="bi bi-search"></i> Track</a>
-            <a href="/logout" class="btn-login"><i class="bi bi-box-arrow-right"></i> Logout</a>
+    /* ══ ANIMATIONS ══ */
+    .fade-in { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+    .fade-delay-1 { transition-delay: 0.1s; }
+    .fade-delay-2 { transition-delay: 0.2s; }
+    .fade-delay-3 { transition-delay: 0.3s; }
+    .fade-delay-4 { transition-delay: 0.4s; }
 
-        {% else %}
-            <!-- ── GUEST NAV: Home, Login, Register ── -->
-            <a href="/login" class="btn-login"><i class="bi bi-box-arrow-in-right"></i> Login</a>
-            <a href="/signup" class="btn-signup"><i class="bi bi-person-plus"></i> Signup</a>
+    /* ══ RESPONSIVE ══ */
+    @media (max-width: 991px) {
+        .hero { padding: 3rem 0 2.5rem; min-height: auto; }
+        .hero-visual { margin-top: 2.5rem; }
+        .float-2 { margin-left: 0 !important; }
+    }
+    @media (max-width: 575px) {
+        .hero-cta { flex-direction: column; }
+        .btn-hero-primary, .btn-hero-secondary { width: 100%; justify-content: center; }
+        .cat-grid { grid-template-columns: repeat(3, 1fr); }
+        .cta-btns { flex-direction: column; align-items: center; }
+        .cta-btns a { width: 100%; justify-content: center; }
+    }
+</style>
+{% endblock %}
 
-        {% endif %}
+{% block content %}
 
-    </div>
-</nav>
-
-
-<!-- ═══════════════════════════════════════════════════════════════
-     HERO SECTION
-     Buttons change target based on login state:
-       Guest       → both buttons go to /signup
-       User/Admin  → File Complaint → /submit, Track Status → /track
-════════════════════════════════════════════════════════════════ -->
+<!-- ══════════════════════════ HERO ══════════════════════════ -->
 <section class="hero">
     <div class="hero-watermark">🪷</div>
     <div class="container">
-        <div class="row align-items-center g-5">
+        <div class="row align-items-center g-4 g-lg-5">
+
             <div class="col-lg-6">
                 <div class="hero-content">
                     <div class="hero-eyebrow">
@@ -344,10 +264,8 @@
                         Track resolution progress in real time.
                         Together we build a cleaner, safer India.
                     </p>
-
                     <div class="hero-cta">
                         {% if session.get('role') %}
-                            <!-- Logged-in user or admin: go to actual pages -->
                             <a href="/submit" class="btn-hero-primary">
                                 <i class="bi bi-pencil-square"></i> File a Complaint
                             </a>
@@ -355,11 +273,10 @@
                                 <i class="bi bi-search"></i> Track Status
                             </a>
                         {% else %}
-                            <!-- Guest: both buttons lead to signup to register first -->
                             <a href="/signup" class="btn-hero-primary">
                                 <i class="bi bi-pencil-square"></i> File a Complaint
                             </a>
-                            <a href="/signup" class="btn-hero-secondary">
+                            <a href="/login" class="btn-hero-secondary">
                                 <i class="bi bi-search"></i> Track Status
                             </a>
                         {% endif %}
@@ -367,7 +284,6 @@
                 </div>
             </div>
 
-            <!-- Floating stat cards — always visible -->
             <div class="col-lg-6">
                 <div class="hero-visual">
                     <div class="hero-card float-1">
@@ -377,7 +293,7 @@
                             <div class="hc-label">Total Complaints Filed</div>
                         </div>
                     </div>
-                    <div class="hero-card float-2" style="margin-left:2rem;">
+                    <div class="hero-card float-2">
                         <div class="hc-icon">✅</div>
                         <div>
                             <div class="hc-num">{{ resolved }}</div>
@@ -393,37 +309,34 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </section>
 
 
-<!-- ═══════════════════════════════════════════════════════════════
-     TRUST BAR — unchanged
-════════════════════════════════════════════════════════════════ -->
+<!-- ══════════════════════════ TRUST BAR ══════════════════════════ -->
 <div class="trust-bar">
     <div class="container">
-        <div class="row g-3">
+        <div class="row g-2">
             <div class="col-6 col-md-3">
                 <div class="trust-item"><i class="bi bi-shield-fill-check"></i> Verified Users Only</div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="trust-item"><i class="bi bi-geo-alt-fill"></i> Location-Tagged Complaints</div>
+                <div class="trust-item"><i class="bi bi-geo-alt-fill"></i> Location-Tagged</div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="trust-item"><i class="bi bi-clock-fill"></i> Deadline Tracking</div>
             </div>
             <div class="col-6 col-md-3">
-                <div class="trust-item"><i class="bi bi-map-fill"></i> State-wise Administration</div>
+                <div class="trust-item"><i class="bi bi-map-fill"></i> State-wise Admin</div>
             </div>
         </div>
     </div>
 </div>
 
 
-<!-- ═══════════════════════════════════════════════════════════════
-     HOW IT WORKS — unchanged
-════════════════════════════════════════════════════════════════ -->
+<!-- ══════════════════════════ HOW IT WORKS ══════════════════════════ -->
 <section class="section">
     <div class="container">
         <div class="text-center mb-5 fade-in">
@@ -435,15 +348,15 @@
             </p>
         </div>
         <div class="row g-4">
-            <div class="col-md-3 fade-in fade-delay-1">
+            <div class="col-sm-6 col-lg-3 fade-in fade-delay-1">
                 <div class="step-card">
                     <div class="step-icon">📝</div>
                     <div class="step-number">01</div>
-                    <h5>Signup & Verify</h5>
+                    <h5>Signup &amp; Verify</h5>
                     <p>Create your account with email OTP verification — ensures only genuine citizens file complaints.</p>
                 </div>
             </div>
-            <div class="col-md-3 fade-in fade-delay-2">
+            <div class="col-sm-6 col-lg-3 fade-in fade-delay-2">
                 <div class="step-card">
                     <div class="step-icon">📸</div>
                     <div class="step-number">02</div>
@@ -451,7 +364,7 @@
                     <p>Describe your complaint, upload a photo, and share your GPS location for precise identification.</p>
                 </div>
             </div>
-            <div class="col-md-3 fade-in fade-delay-3">
+            <div class="col-sm-6 col-lg-3 fade-in fade-delay-3">
                 <div class="step-card">
                     <div class="step-icon">🏛️</div>
                     <div class="step-number">03</div>
@@ -459,7 +372,7 @@
                     <p>Your complaint is instantly routed to the correct state municipal authority for action.</p>
                 </div>
             </div>
-            <div class="col-md-3 fade-in fade-delay-4">
+            <div class="col-sm-6 col-lg-3 fade-in fade-delay-4">
                 <div class="step-card">
                     <div class="step-icon">📊</div>
                     <div class="step-number">04</div>
@@ -472,9 +385,7 @@
 </section>
 
 
-<!-- ═══════════════════════════════════════════════════════════════
-     CATEGORIES — unchanged
-════════════════════════════════════════════════════════════════ -->
+<!-- ══════════════════════════ CATEGORIES ══════════════════════════ -->
 <section class="categories-section">
     <div class="container">
         <div class="text-center mb-5 fade-in">
@@ -512,22 +423,20 @@
 </section>
 
 
-<!-- ═══════════════════════════════════════════════════════════════
-     STATS — unchanged
-════════════════════════════════════════════════════════════════ -->
+<!-- ══════════════════════════ STATS ══════════════════════════ -->
 <section class="stats-section">
     <div class="container">
         <div class="row justify-content-center text-center g-0">
-            <div class="col-md-3 fade-in">
+            <div class="col-6 col-md-3 fade-in">
                 <div class="stat-box">
                     <div class="big-num">28<span>+</span></div>
-                    <p>States & UTs Covered</p>
+                    <p>States &amp; UTs Covered</p>
                 </div>
             </div>
             <div class="col-md-1 d-none d-md-flex align-items-center justify-content-center">
                 <div class="stat-divider" style="height:80px;"></div>
             </div>
-            <div class="col-md-3 fade-in fade-delay-1">
+            <div class="col-6 col-md-3 fade-in fade-delay-1">
                 <div class="stat-box">
                     <div class="big-num">{{ total }}<span>+</span></div>
                     <p>Complaints Filed</p>
@@ -536,7 +445,7 @@
             <div class="col-md-1 d-none d-md-flex align-items-center justify-content-center">
                 <div class="stat-divider" style="height:80px;"></div>
             </div>
-            <div class="col-md-3 fade-in fade-delay-2">
+            <div class="col-12 col-md-3 fade-in fade-delay-2">
                 <div class="stat-box">
                     <div class="big-num">{{ resolved }}<span>+</span></div>
                     <p>Issues Resolved</p>
@@ -547,22 +456,15 @@
 </section>
 
 
-<!-- ═══════════════════════════════════════════════════════════════
-     CTA SECTION
-     Buttons adapt the same way as hero:
-       Guest       → signup + login
-       Logged in   → submit + track
-════════════════════════════════════════════════════════════════ -->
+<!-- ══════════════════════════ CTA ══════════════════════════ -->
 <section class="cta-section">
     <div class="container" style="position:relative;z-index:1;">
         <div class="fade-in">
-            <div style="font-size:3rem; margin-bottom:1rem;">𝒊𝒏𝒅𝒊𝒂</div>
+            <div style="font-size:2.5rem; margin-bottom:1rem;">𝒊𝒏𝒅𝒊𝒂</div>
             <h2>Make Your City Better Today</h2>
-            <p>Join thousands of citizens actively participating in civic improvement across India.</p>
-            <div style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap;">
-
+            <p class="cta-sub">Join thousands of citizens actively participating in civic improvement across India.</p>
+            <div class="cta-btns">
                 {% if session.get('role') %}
-                    <!-- Logged-in: direct action buttons -->
                     <a href="/submit" class="btn-hero-primary">
                         <i class="bi bi-pencil-square"></i> File a Complaint
                     </a>
@@ -570,7 +472,6 @@
                         <i class="bi bi-search"></i> Track Your Complaint
                     </a>
                 {% else %}
-                    <!-- Guest: signup + login buttons -->
                     <a href="/signup" class="btn-hero-primary">
                         <i class="bi bi-person-plus"></i> Create Free Account
                     </a>
@@ -578,33 +479,18 @@
                         <i class="bi bi-box-arrow-in-right"></i> Already Registered? Login
                     </a>
                 {% endif %}
-
             </div>
         </div>
     </div>
 </section>
 
+{% endblock %}
 
-<!-- ═══════════════════════════════════════════════════════════════
-     FOOTER — unchanged
-════════════════════════════════════════════════════════════════ -->
-<div class="site-footer">
-    <div class="container">
-        <p>© 2025 Municipal Complaint Management System &nbsp;|&nbsp; Government of India &nbsp;|&nbsp; Serving Citizens with Integrity</p>
-        <p style="margin-top:6px; font-size:0.78rem; opacity:0.5;">
-            This portal is for civic complaint registration only. For emergencies, contact local authorities directly.
-        </p>
-    </div>
-</div>
-
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_scripts %}
 <script>
-    // Scroll-triggered fade-in for all .fade-in elements
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-    }, { threshold: 0.15 });
+    }, { threshold: 0.12 });
     document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 </script>
-</body>
-</html>
+{% endblock %}
